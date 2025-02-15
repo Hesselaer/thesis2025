@@ -13,6 +13,7 @@
 \usepackage{tikz}
 \usetikzlibrary{shapes,backgrounds,calc,arrows}
 \usepackage{microtype}
+\usepackage{amsmath}
 % fill in title and author
 \usepackage[setpagesize=false,colorlinks=true,linkcolor=blue,urlcolor=red,pdftitle={An Interesting Title for a Thesis},pdfauthor={Your Name}]{hyperref}
 \frenchspacing
@@ -89,15 +90,28 @@ TODO: quite a lot!
 \subsection{Thesis overview}
 It is recommended to end the introduction with an overview of the thesis. This chapter contains the introduction; Section~\ref{definitions} includes the definitions; Section~\ref{relatedwork} discusses related work; Section~\ref{experiments} describes the experiments and their outcome; Section~\ref{conclusions} concludes. By the way, different section titles are certainly possible.
 
-Also produce a nice sentence with ``bachelor thesis'', LIACS and the names of the supervisors.
+Also, produce a nice sentence with ``bachelor thesis'', LIACS and the names of the supervisors.
 
+\section{Notes}\label{notes}
+\paragraph{Connected components}
+Let $S$ be a simplicial set with an iPomset label set $L$ and a labeling map $\ell: S \rightarrow L$. Say that $x,y\in S$ are \textit{iPomset neighbors} iff $\ell(x)$ and $\ell(y)$ are equal when disregarding event order.
 
+This gives us path connected components of $S$ where $x\sim y$ (are connected) iff there is a path of neighbors connecting $x$ and $y$.
 
-
-\section{Definitions}\label{definitions}
-
-TODO Finish this chapter \ldots\ and the rest!
-
+In this way \[
+\begin{pmatrix} a \\ b \end{pmatrix}
+\sim 
+\{a,b\}
+\sim
+\begin{pmatrix} b \\ a \end{pmatrix}
+\]
+ in the figure below.
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.3\linewidth]{image.png}
+    \caption{equivalence of iPomsets}
+    \label{fig:ipomset-equivalence}
+\end{figure}
 \section{Related Work}\label{relatedwork}
 
 \section{Experiments}\label{experiments}

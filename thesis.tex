@@ -14,13 +14,54 @@
 \usetikzlibrary{shapes,backgrounds,calc,arrows}
 \usepackage{microtype}
 \usepackage{amsmath}
-% fill in title and author
+\usepackage[utf8]{inputenc}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{bbm}
+\usepackage{geometry}
+\usepackage{csquotes}
+\usepackage[hidelinks]{hyperref}
+\usepackage{mathtools}
+\usepackage{parskip}
+
+\usepackage{mathtools}
+\newcommand{\defeq}{\vcentcolon=}
+\newcommand{\eqdef}{=\vcentcolon}
+
+\DeclareMathOperator{\Ima}{Im}
+\DeclareMathOperator{\sech}{sech}
+\renewcommand{\P}{\mathcal{P}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\E}[1]{\mathbb{E}\{#1\}}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\1}{\mathbbm{1}}
+\newcommand{\ua}{\nearrow}
+\newcommand{\da}{\searrow}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\dx}{\mathrm{d}x}
+\newcommand{\B}{\mathcal{B}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\T}{\mathbb{T}}
+\newcommand{\V}{\mathcal{V}}
+\newcommand{\U}{\mathcal{U}}
+\newcommand{\id}{\text{id}}
+\newcommand{\I}{\mathcal{I}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\J}{\mathcal{J}}
+\newcommand{\G}{\mathcal{G}}
+\renewcommand{\L}{\mathcal{L}}
+\newcommand{\specepsilon}{\mathcal{E}}
+\newcommand{\M}{\mathcal{M}}
+\newcommand{\II}{\textbf{II}}
+\newcommand{\bigo}{\mathcal{O}}
 \usepackage[setpagesize=false,colorlinks=true,linkcolor=blue,urlcolor=red,pdftitle={An Interesting Title for a Thesis},pdfauthor={Your Name}]{hyperref}
-\frenchspacing
-\setlength{\parindent}{0pt}
+\setlength\parindent{0pt}
 
 \begin{document}
-
 \input{titlepage}
 
 % abstract and references should fit on one page
@@ -94,11 +135,11 @@ Also, produce a nice sentence with ``bachelor thesis'', LIACS and the names of t
 
 \section{Notes}\label{notes}
 \paragraph{Connected components}
-Let $S$ be a simplicial set with an iPomset label set $L$ and a labeling map $\ell: S \rightarrow L$. Say that $x,y\in S$ are \textit{iPomset neighbors} iff $\ell(x)$ and $\ell(y)$ are equal when disregarding event order.
+Let $S$ be a simplicial set with an iPomset label set $L$ and a labeling map $\ell: S \rightarrow L$. Say that $x,y\in S$ are \textit{iPomset neighbors} iff there is a face map from one to the other, and $\ell(x)$,$\ell(y)$ are equal when disregarding event order.
 
 This gives us path connected components of $S$ where $x\sim y$ (are connected) iff there is a path of neighbors connecting $x$ and $y$.
 
-In this way \[
+In this way (when denoting simplicial set elements by their labels)\[
 \begin{pmatrix} a \\ b \end{pmatrix}
 \sim 
 \{a,b\}
@@ -112,6 +153,45 @@ In this way \[
     \caption{equivalence of iPomsets}
     \label{fig:ipomset-equivalence}
 \end{figure}
+
+We then take the quotient over this relation to get something workable for a transition coalgebra:
+\[
+    H \defeq S/\sim
+\]
+
+We can partition this into $H = H_1 \sqcup H_2 \sqcup H_3, \dots$ Where $[x]_{\sim} \in H_k$ iff its shared iPomset event set contains $k$ events.
+This also entails that if $[x]\in H_k$ then the maximum dimension of an element of $[x]$ is $k$.
+
+We first intuitively look at what happens when we transition. From each state (class) in $H$ we have maps 
+What we can then do to transition is as follows:
+Let the current state of the system be $[x]_{\sim}\in H_k$, the equivalence class of some $x\in S$ under $\sim$, from here on written as $[x]$.
+\newpage
+
+Define the transition maps $\downarrow_a^k: H_k\to H_{k-1}$ and $\uparrow_a^k: H_k \to H_{k+1}$ as follows:
+
+\begin{itemize}
+    \item The \textit{downward transition} map $\downarrow_a^k$ represents the transition when action $a$ ends:
+    \[
+    \downarrow_a^k: [x] \mapsto [y]
+    \]
+    iff there are $x'\in [x]$, $y'\in [y]$ for which there exists a face map $d_i: x' \to y'$ in $S$ such that
+    \[
+    P_{[y]} = P_{[x]} \setminus \{a\}.
+    \]
+    where $P_{[x]}$ denotes the event set of $\ell(x)$
+    
+    \item The \textit{upward transition} map $\uparrow_a^k$ represents the transition when action $a$ begins:
+    \[
+    \uparrow_a^k: [x] \mapsto [y]
+    \]
+    iff $\downarrow_a^{k+1}([y]) = [x]$, which therefore adds $a$ to the currently running events: 
+    \[
+    P_{[y]} = P_{[x]} \cup \{a\}.
+    \]
+\end{itemize}
+
+Now the directionality of a HDA can be easily constructed. It is simply a choice of allowed which will then define our coalgebra.
+\newpage
 \section{Related Work}\label{relatedwork}
 
 \section{Experiments}\label{experiments}

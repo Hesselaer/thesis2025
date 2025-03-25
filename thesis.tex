@@ -136,18 +136,19 @@ TODO: quite a lot!
 It is recommended to end the introduction with an overview of the thesis. This chapter contains the introduction; Section~\ref{definitions} includes the definitions; Section~\ref{relatedwork} discusses related work; Section~\ref{experiments} describes the experiments and their outcome; Section~\ref{conclusions} concludes. By the way, different section titles are certainly possible.
 
 Also, produce a nice sentence with ``bachelor thesis'', LIACS and the names of the supervisors.
-\section{Notes}
-\begin{definition}{Ranked term graph}
+\section{Ranked Term Graphs}
 
+\subsection{Definition and Structure}
+\begin{definition}{Ranked Term Graph}
 A \emph{ranked term graph} consists of:
 \begin{itemize}
 \item A directed acyclic graph (DAG) $g$,
-\item A \emph{rank} $(d_r, d_v) \in \N^2$. Denoting the size of the root and target interfaces,
-\item Let $[n] \defeq \{1,2,\dots, n\}$. Maps $r: [d_r] \to \P(g)$ and $v: [d_v] \to \P(g)$, where $r([d_r])$ consists of minimal vertices of $g$ and $v([d_v])$ consists of maximal vertices called the \emph{root} and \emph{variable} maps.
+\item A \emph{rank} $(d_r, d_v) \in \mathbb{N}^2$, denoting the size of the root and variable interfaces,
+\item Let $[n] \coloneqq \{1,2,\dots, n\}$. Maps $r: [d_r] \to \mathcal{P}(g)$ and $v: [d_v] \to \mathcal{P}(g)$, where $r([d_r])$ consists of minimal vertices of $g$ and $v([d_v])$ consists of maximal vertices called the \emph{root} and \emph{variable} maps.
 \end{itemize}
 \end{definition}
 
-\subsection{Monoidal Structure}
+\subsection{Monoidal Structure on Ranked Term Graphs}
 \begin{definition}
 Let $G = (g^G, (d_r^G, d_v^G), r^G, v^G)$, $F = (g^F, (d_r^F, d_v^F), r^F, v^F)$ be ranked term graphs. We define a monoidal product functor as:
 $$G \oplus F = \left(g^G \sqcup g^F, (d_r^G + d_r^F, d_v^G + d_v^F), r', v'\right)$$
@@ -171,30 +172,33 @@ Where $r'$, $v'$ are the concatenations of $r^G$ and $r^F$, $v^G$ and $v^F$ resp
 \begin{definition}
 Let $G = (g^G, (d_r^G, d_v^G), r^G, v^G)$, $F = (g^F, (d_r^F, d_v^F), r^F, v^F)$ be ranked term graphs such that $d_v^G = d_r^F$, their composition is defined as follows:
 $$G\circ F = (H, (d_r^G, d_v^F), r^G, v^F)$$
-Where $H = g^G\sqcup g^F \sqcup\{(x,x') \in g^G\times g^F | \exists i\in[d_v^G]. x\in v^G(i) \wedge x'\in r^F(i)\}$ which is equal to the two union of the two graphs with added arrows going from roots to variables which are equally numbered.
+Where $H = g^G\sqcup g^F \sqcup\{(x,x') \in g^G\times g^F | \exists i\in[d_v^G]. x\in v^G(i) \wedge x'\in r^F(i)\}$ which is equal to the union of the two graphs with added arrows going from roots to variables that are equally numbered.
 \end{definition}
 
-A category with ranked term graphs as morphisms, $\N$ as the set of objects, the disjoint union as monoidal product, and the defined composition of morphisms gives a monoidal category.
+A category with ranked term graphs as morphisms, $\mathbb{N}$ as the set of objects, the disjoint union as monoidal product, and the defined composition of morphisms gives a monoidal category.
+
 \newpage
 
-\subsection{Simplicial set}
-To get a simplicial set we need an extra piece of equipment: parallel composition with identification of the interfaces.
+\section{Simplicial Structure on Ranked Term Graphs}
+
+\subsection{Parallel Composition and Identity Morphisms}
 \begin{definition}
     Let $G$, $F$ be ranked term graphs of equal rank $(d_r, d_v)$. Then:
     $$G\otimes F = (g^G\sqcup g^F, (d_r, d_v), r^G \sqcup r^F, v^G \sqcup v^F)$$
 \end{definition}
 
-Which allows for a identity element for our morphisms:
-$id_n = (\varnothing, (n, n), r, v)$ where $r(k) = \varnothing = v(k) \forall k\in[n]$
+This allows for an identity element for our morphisms:
+$$id_n = (\varnothing, (n, n), r, v)$$ 
+where $r(k) = \varnothing = v(k) \forall k\in[n]$.
 
-Let $G$ be a ranked graph of rank $(n,n)$ we get clearly: $id_n \otimes G = G\otimes id_n = G$\\
+Let $G$ be a ranked graph of rank $(n,n)$. Clearly, we have:  
+$$id_n \otimes G = G\otimes id_n = G.$$
 
-And lastly we are able to identify two consecutive interface points:
-
+\subsection{Face Maps: Identifying Consecutive Interfaces}
 \begin{definition}
-    Let $G$ be a ranked term graph of rank $(n,n)$, define $p_m$ to be the identification of the $m, m+1$-th interface points, for $m\in\{0\}\cup[n]$
+    Let $G$ be a ranked term graph of rank $(n,n)$, define $p_m$ to be the identification of the $m$-th and $(m+1)$-th interface points, for $m\in\{0\}\cup[n]$:
     \begin{align*}
-        p_m(G) = (g, (n-1, n-1), r', v')
+        p_m(G) = (g, (n-1, n-1), r', v').
     \end{align*}
     Where we have:
     \[
@@ -213,13 +217,14 @@ And lastly we are able to identify two consecutive interface points:
     \]
 \end{definition}
 
+\subsection{Degeneracy Maps: Adding Extra Interfaces}
 \begin{definition}
-    Let $G$ be a ranked graph, define $a_m$ to be addition of an extra interface point at position $m$:
+    Let $G$ be a ranked graph, define $a_m$ to be the addition of an extra interface point at position $m$:
         \begin{align*}
-        a_m(G) = (g, (n+1, n+1), r', v')
+        a_m(G) = (g, (n+1, n+1), r', v').
     \end{align*}
 
-        Where we have:
+    Where we have:
     \[
     r'(k) = \begin{cases}
         r(k) & k \leq m\\
@@ -236,18 +241,60 @@ And lastly we are able to identify two consecutive interface points:
     \]
 \end{definition}
 
-Clearly $p_m\circ a_m (G) = G$
-\newpage
+Clearly, $p_m\circ a_m (G) = G$.
 
-Let $\L_n$ be the set of ranked term graphs of rank $(n,n)$ and $\L = \bigcup_{n\in\N} \L_n$ we define a simplicial set $N\L$ as follows:
-\begin{definition} Simplicial set of ranked term graphs
+\subsection{Simplicial Set of Ranked Term Graphs}
+Let $\mathcal{L}_n$ be the set of ranked term graphs of rank $(n,n)$ and $\mathcal{L} = \bigcup_{n\in\mathbb{N}} \mathcal{L}_n$. We define a simplicial set $N\mathcal{L}$ as follows:
+\begin{definition}
+\textbf{Simplicial Set of Ranked Term Graphs}
     \begin{itemize}
-        \item $(N\L)_n = \L_n^n$
+        \item $(N\mathcal{L})_n = \mathcal{L}_n^n$
         \item $d_n^0(G_1, G_2, \dots G_n) = (p_0(G_2), \dots p_0(G_n))$
         \item $d_n^k(G_1, G_2, \dots G_n) = (p_k(G_1), \dots p_k(G_k \otimes G_{k+1}), \dots p_k(G_n))$
         \item $s_n^k(G_1, \dots, G_n) = (a_k(G_1), \dots, a_k(G_k), id_{n+1}, a_k(G_{k+1}), \dots a_k(G_n))$
     \end{itemize}
 \end{definition}
+
+This setup adheres to the \emph{simplicial identities}
+\begin{enumerate}
+    \item $d_n^i\circ d_n^j = d_n^{j-1}\circ d_n^i$ if $i < j$
+    \item $d_n^i\circ s_n^j = s_n^{j-1}\circ d_n^i$ if $i < j$
+    \item $d_n^i\circ s_n^j = id$ if $i \in \{j, j+1\}$
+    \item $d_n^i\circ s_n^j = s_n^j\circ d_n^{i-1}$ if $i > j + 1$
+    \item $s_n^i\circ s_n^j = s_n^{j+1}\circ s_n^i$ if $i\leq j$
+\end{enumerate}
+
+\begin{proof}
+    Let $s = (G_1, \dots, G_n)\in (N\L)_n$ we check each identity:
+    \begin{enumerate}
+        \item Let $i < j$, $i \neq 0$ then $$(d_n^i\circ d_n^j)(s) = (p_i\circ p_j(G_1), \dots p_i\circ p_j(G_i \otimes G_{i+1}), \dots, p_i\circ p_j(G_j \otimes G_{j+1}), \dots p_i\circ p_j(G_n))$$
+        and
+        \begin{align*}
+            (d_n^{j-1}&\circ d_n^i)(s) =\\ 
+            &(p_{j-1}\circ p_i(G_1), \dots p_{j-1}\circ p_i(G_i \otimes G_{i+1}), \dots, p_{j-1}\circ p_i(G_j \otimes G_{j+1}), \dots p_{j-1}\circ p_i(G_n))
+        \end{align*}
+        are equal iff $p_i\circ p_j = p_{j-1}\circ p_i$ for $i < j$
+    \end{enumerate}
+\end{proof}
+\newpage
+\paragraph{Interfaces are simplicial sets??}
+Look at the calculation above. When written out all identities will come to this conclusion: $N\L$ is a simplicial set iff $p, a$ adhere to the simplicial identities.
+
+In light of this I though of the monoid:
+\begin{itemize}
+    \item Let $A$ be a countable carrier set
+    \item $\M$ = ($\P(A)^2$, $(\varnothing, \varnothing)$, $\cup$)
+\end{itemize}
+
+This is a monoid and a single element $(r, v)$ could represent root and target sets. Take the nerve with the standard nerve construction for monoids:
+\begin{itemize}
+    \item $(N\M)_n = \M^n$
+    \item $d_0(U_1, \dots, U_n) = (U_2, \dots, U_n)$
+    \item $d_k(U_1, \dots, U_n) = (U_1, \dots, U_k\cup U_{k+1}, \dots, U_n)$
+    \item $s_k(U_1, \dots, U_n) = (U_1, \dots, U_k, (\varnothing, \varnothing), U_{k+1}, \dots,  U_n)$
+\end{itemize}
+
+Which is known to be a simplicial set. And if you look at the definitions of the interface and $p, a$ maps it is exactly what we have been doing. It also induces an ordering on the interface which we had to do by hand earlier.
 
 \newpage
 \section{Related Work}\label{relatedwork}

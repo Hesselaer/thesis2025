@@ -20,7 +20,8 @@
 \usepackage{amssymb}
 \usepackage{amsthm}
 
-\newtheorem{definition}{Definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{lemma}{Lemma}[section]
 
 \usepackage{bbm}
 \usepackage{geometry}
@@ -62,6 +63,7 @@
 \newcommand{\M}{\mathcal{M}}
 \newcommand{\II}{\textbf{II}}
 \newcommand{\bigo}{\mathcal{O}}
+\renewcommand{\H}{\mathcal{H}}
 \usepackage[setpagesize=false,colorlinks=true,linkcolor=blue,urlcolor=red,pdftitle={An Interesting Title for a Thesis},pdfauthor={Your Name}]{hyperref}
 \setlength\parindent{0pt}
 
@@ -139,162 +141,98 @@ Also, produce a nice sentence with ``bachelor thesis'', LIACS and the names of t
 \section{Ranked Term Graphs}
 
 \subsection{Definition and Structure}
-\begin{definition}{Ranked Term Graph}
-A \emph{ranked term graph} consists of:
+\begin{definition}
+    A directed \emph{hypergraph} $(V,H)$ is a set of vertices $V$ and a set of \emph{hyperarcs} $H\subseteq \P(V)^2$.
+\end{definition}
+
+\emph{Notation:} A directed hypergraph containing no cycles is a Directed Acyclic Hypergraph (DAH)\\
+
+\begin{definition}
+A \emph{ranked term hypergraph} $(g, r, o, \L, A)$ consists of:
 \begin{itemize}
-\item A directed acyclic graph (DAG) $g$,
-\item A \emph{rank} $(d_r, d_v) \in \mathbb{N}^2$, denoting the size of the root and variable interfaces,
-\item Let $[n] \coloneqq \{1,2,\dots, n\}$. Maps $r: [d_r] \to \mathcal{P}(g)$ and $v: [d_v] \to \mathcal{P}(g)$, where $r([d_r])$ consists of minimal vertices of $g$ and $v([d_v])$ consists of maximal vertices called the \emph{root} and \emph{variable} maps.
+\item A DAH $g$,
+\item Sequences $r = (r_i)_{i\in[|r|]}$, $o = (o_i)_{i\in[|o|]}$ $r_i, o_i\in \P(V)$ denoting the root and variable interfaces. $o_i$ contains only maximal vertices. We refer to $(|r|, |o|)$ as the \emph{rank} of this graph.
+\item An action set $A$ and a hyperarc labelling function $\L: H\to A$
 \end{itemize}
 \end{definition}
+\emph{Notation:} In this thesis we refer to ranked term hypergraphs as just hypergraphs as we will only be working with this kind. $HG(n,m)$ is the set of ranked term  hypergraphs of rank $(n,m)$
 
-\subsection{Monoidal Structure on Ranked Term Graphs}
+A ranked hypergraph with $|r| = |o|$ is called symmetric.
+
+\subsection{Composition of ranked hypergraphs}
 \begin{definition}
-Let $G = (g^G, (d_r^G, d_v^G), r^G, v^G)$, $F = (g^F, (d_r^F, d_v^F), r^F, v^F)$ be ranked term graphs. We define a monoidal product functor as:
-$$G \oplus F = \left(g^G \sqcup g^F, (d_r^G + d_r^F, d_v^G + d_v^F), r', v'\right)$$
-Where $r'$, $v'$ are the concatenations of $r^G$ and $r^F$, $v^G$ and $v^F$ respectively:
-\begin{align*}
-    r'(k) = \begin{cases} 
-      r^G(k) & k\leq d^G_r\\
-      r^F(k-d^G_r)& d^G_r < k \leq d^G_r + d^F_r \\
-   \end{cases}
-\end{align*}
+Let $G, F$ be hypergraphs such that $|o^G| = |r^F|$, their composition is defined as follows:
+\begin{align}
+    G\circ F = (g', r', o^F, L^G\cup L^F, A^G\cup A^F)
+\end{align}
 
-\begin{align*}
-    v'(k) = \begin{cases} 
-      v^G(k) & k\leq d^G_v\\
-      v^F(k-d^G_v)& d^G_v < k \leq d^G_v + d^F_v \\
-   \end{cases}
-\end{align*}
-\end{definition}
-
-\subsection{Composition of Morphisms}
-\begin{definition}
-Let $G = (g^G, (d_r^G, d_v^G), r^G, v^G)$, $F = (g^F, (d_r^F, d_v^F), r^F, v^F)$ be ranked term graphs such that $d_v^G = d_r^F$, their composition is defined as follows:
-$$G\circ F = (H, (d_r^G, d_v^F), r^G, v^F)$$
-Where $H = g^G\sqcup g^F \sqcup\{(x,x') \in g^G\times g^F | \exists i\in[d_v^G]. x\in v^G(i) \wedge x'\in r^F(i)\}$ which is equal to the union of the two graphs with added arrows going from roots to variables that are equally numbered.
-\end{definition}
-
-A category with ranked term graphs as morphisms, $\mathbb{N}$ as the set of objects, the disjoint union as monoidal product, and the defined composition of morphisms gives a monoidal category.
-
-\newpage
-
-\section{Simplicial Structure on Ranked Term Graphs}
-
-\subsection{Parallel Composition and Identity Morphisms}
-\begin{definition}
-    Let $G$, $F$ be ranked term graphs of equal rank $(d_r, d_v)$. Then:
-    $$G\otimes F = (g^G\sqcup g^F, (d_r, d_v), r^G \sqcup r^F, v^G \sqcup v^F)$$
-\end{definition}
-
-This allows for an identity element for our morphisms:
-$$id_n = (\varnothing, (n, n), r, v)$$ 
-where $r(k) = \varnothing = v(k) \forall k\in[n]$.
-
-Let $G$ be a ranked graph of rank $(n,n)$. Clearly, we have:  
-$$id_n \otimes G = G\otimes id_n = G.$$
-
-\subsection{Face Maps: Identifying Consecutive Interfaces}
-\begin{definition}
-    Let $G$ be a ranked term graph of rank $(n,n)$, define $p_m$ to be the identification of the $m$-th and $(m+1)$-th interface points, for $m\in\{0\}\cup[n]$:
-    \begin{align*}
-        p_m(G) = (g, (n-1, n-1), r', v').
-    \end{align*}
-    Where we have:
-    \[
-    r'(k) = \begin{cases}
-        r(k) & k < m\\
-        r(m) \cup r(m+1) & k = m\\
-        r(k + 1) & m < k < n
-    \end{cases}
-    \]
-        \[
-    v'(k) = \begin{cases}
-        v(k) & k < m\\
-        v(m) \cup v(m+1) & k = m\\
-        v(k + 1) & m < k \leq n - 1
-    \end{cases}
-    \]
-\end{definition}
-
-\subsection{Degeneracy Maps: Adding Extra Interfaces}
-\begin{definition}
-    Let $G$ be a ranked graph, define $a_m$ to be the addition of an extra interface point at position $m$:
-        \begin{align*}
-        a_m(G) = (g, (n+1, n+1), r', v').
-    \end{align*}
-
-    Where we have:
-    \[
-    r'(k) = \begin{cases}
-        r(k) & k \leq m\\
-        \varnothing & k = m+1\\
-        r(k - 1) & m + 1 < k \leq n+1
-    \end{cases}
-    \]
-        \[
-    v'(k) = \begin{cases}
-        v(k) & k < m\\
-        v(m) \cup v(m+1) & k = m\\
-        v(k + 1) & m < k < n
-    \end{cases}
-    \]
-\end{definition}
-
-Clearly, $p_m\circ a_m (G) = G$.
-
-\subsection{Simplicial Set of Ranked Term Graphs}
-Let $\mathcal{L}_n$ be the set of ranked term graphs of rank $(n,n)$ and $\mathcal{L} = \bigcup_{n\in\mathbb{N}} \mathcal{L}_n$. We define a simplicial set $N\mathcal{L}$ as follows:
-\begin{definition}
-\textbf{Simplicial Set of Ranked Term Graphs}
-    \begin{itemize}
-        \item $(N\mathcal{L})_n = \mathcal{L}_n^n$
-        \item $d_n^0(G_1, G_2, \dots G_n) = (p_0(G_2), \dots p_0(G_n))$
-        \item $d_n^k(G_1, G_2, \dots G_n) = (p_k(G_1), \dots p_k(G_k \otimes G_{k+1}), \dots p_k(G_n))$
-        \item $s_n^k(G_1, \dots, G_n) = (a_k(G_1), \dots, a_k(G_k), id_{n+1}, a_k(G_{k+1}), \dots a_k(G_n))$
-    \end{itemize}
-\end{definition}
-
-This setup adheres to the \emph{simplicial identities}
+We obtain $g'$ by the following procedure:
 \begin{enumerate}
-    \item $d_n^i\circ d_n^j = d_n^{j-1}\circ d_n^i$ if $i < j$
-    \item $d_n^i\circ s_n^j = s_n^{j-1}\circ d_n^i$ if $i < j$
-    \item $d_n^i\circ s_n^j = id$ if $i \in \{j, j+1\}$
-    \item $d_n^i\circ s_n^j = s_n^j\circ d_n^{i-1}$ if $i > j + 1$
-    \item $s_n^i\circ s_n^j = s_n^{j+1}\circ s_n^i$ if $i\leq j$
+    \item $g' = (V,H) \defeq g^G \sqcup g^F$
+    \item For each $o^G_i\in o^G$, $v\in o^G_i$: $V\defeq V\setminus \{v\}$ and for each $(U, U')\in H$ with $v\in U'$ set $U' \defeq (U' \cup r^F_i) \setminus \{v\}$\\
 \end{enumerate}
 
-\begin{proof}
-    Let $s = (G_1, \dots, G_n)\in (N\L)_n$ we check each identity:
-    \begin{enumerate}
-        \item Let $i < j$, $i \neq 0$ then $$(d_n^i\circ d_n^j)(s) = (p_i\circ p_j(G_1), \dots p_i\circ p_j(G_i \otimes G_{i+1}), \dots, p_i\circ p_j(G_j \otimes G_{j+1}), \dots p_i\circ p_j(G_n))$$
-        and
-        \begin{align*}
-            (d_n^{j-1}&\circ d_n^i)(s) =\\ 
-            &(p_{j-1}\circ p_i(G_1), \dots p_{j-1}\circ p_i(G_i \otimes G_{i+1}), \dots, p_{j-1}\circ p_i(G_j \otimes G_{j+1}), \dots p_{j-1}\circ p_i(G_n))
-        \end{align*}
-        are equal iff $p_i\circ p_j = p_{j-1}\circ p_i$ for $i < j$
-    \end{enumerate}
-\end{proof}
+And we obtain $r'$ by taking over the original $r^G$ and `connecting through' for vertices which are both minimal and maximal:
+\begin{align*}
+    r'_i = \{v\in r_i^G: v \text{ is not maximal}\}\cup \{v\in r_j^F : r^G_i \cap o_j^F \neq \varnothing,  j\in[|r^F|]\}
+   %  \begin{cases} 
+   %     \{v\in r_i^G: v \text{ is not maximal}\}& o _i^G \text{ contains at least 1 non-maximal vertex} \\
+   %     r_i^F & \text{else}
+   % \end{cases}
+\end{align*}
+\end{definition}
+
+This composition allows for an identity $id_n$ namely $id_n = (([n], \varnothing), (\{i\})_{i\in n}, (\{i\})_{i\in n})$. It holds clearly from the definition that for a $(n,m)$ ranked graph $G$ holds: $$id_n \circ G = G \circ id_m = G$$
 \newpage
-\paragraph{Interfaces are simplicial sets??}
-Look at the calculation above. When written out all identities will come to this conclusion: $N\L$ is a simplicial set iff $p, a$ adhere to the simplicial identities.
+\section{Simplicial set over ranked term graphs}
+\subsection{Monoidal structure on interfaces}
+\begin{definition}
+    Let $V$ be the vertex set of a ranked hypergraph.\\
+    We define the monoid $\M = (\P(V)^2, (\varnothing, \varnothing), \cup\times\cup)$. 
+\end{definition}
 
-In light of this I though of the monoid:
-\begin{itemize}
-    \item Let $A$ be a countable carrier set
-    \item $\M$ = ($\P(A)^2$, $(\varnothing, \varnothing)$, $\cup$)
-\end{itemize}
+From this monoid we define a simplicial set using the nerve construction.
 
-This is a monoid and a single element $(r, v)$ could represent root and target sets. Take the nerve with the standard nerve construction for monoids:
-\begin{itemize}
-    \item $(N\M)_n = \M^n$
-    \item $d_0(U_1, \dots, U_n) = (U_2, \dots, U_n)$
-    \item $d_k(U_1, \dots, U_n) = (U_1, \dots, U_k\cup U_{k+1}, \dots, U_n)$
-    \item $s_k(U_1, \dots, U_n) = (U_1, \dots, U_k, (\varnothing, \varnothing), U_{k+1}, \dots,  U_n)$
-\end{itemize}
+\begin{definition}
+    The \emph{nerve} $N(\M)$ of the monoid $\M$ is the simplicial set where:
+    \begin{align*}
+        &N(\M)_n = \M^n\\
+        &d_i(m_1,\dots,m_n) = 
+        \begin{cases}
+            (m_1,\dots,m_i \cup\times\cup m_{i+1}, \dots, m_n) & 0 < i < n\\
+            (m_2,\dots, m_n) & i = 0\\
+            (m_1,\dots,m_{n-1}) & i = n
+        \end{cases}\\
+        &s_i(m_1,\dots,m_n) = (m_1, \dots, m_i, (\varnothing, \varnothing), m_{i+1}, \dots, m_n)\\
+    \end{align*}
+\end{definition}
 
-Which is known to be a simplicial set. And if you look at the definitions of the interface and $p, a$ maps it is exactly what we have been doing. It also induces an ordering on the interface which we had to do by hand earlier.
+\begin{definition}
+Define the simplicial set $\H$ by $\H_n = HG(n,n)$. The face and degeneracy maps of $\H$ are defined to be the unique maps $d^{\H}$, $s^{\H}$ making the following diagrams commute:
+\[
+\begin{tikzcd}
+\H_n \arrow{r}{d_i^{\H}} \arrow{d}{\pi_n} & \H_{n-1} \arrow{d}{\pi_{n-1}} \\
+N(\M)_n \arrow{r}{d_i^\M} & N(\M)_{n-1}
+\end{tikzcd}
+\quad
+\begin{tikzcd}
+\H_n \arrow{r}{s_j^{\H}} \arrow{d}{\pi_n} & \H_{n+1} \arrow{d}{\pi_{n+1}} \\
+N(\M)_n \arrow{r}{s_j^\M} & N(\M)_{n+1}
+\end{tikzcd}
+\]
+
+Where $\pi_n$ is the projection onto the interfaces given by: $\pi_n((g, r, o, \L, A)) = ((r_i, o_i))_{i\in [n]}$. That is, the face and degeneracy maps of $\H$ are defined by the underlying monoidal nerve on the interfaces.
+\end{definition}
+
+$\H$ is a simplicial set precisely because we inherit the face and degeneracy maps from $N(\M)$:\\
+
+\begin{lemma}
+    $\H$ is indeed a simplicial set.
+\end{lemma}
+
+\begin{proof}
+    $\pi_n$ is a simplicial morphism by commutation of the given diagrams. Since $N(\M)$ is a simplicial set by definition and the diagrams commute the simplicial identities also hold for $d^{\H}$ and $s^{\H}$. Therefore $\H$ is a simplicial set.
+\end{proof}
 
 \newpage
 \section{Related Work}\label{relatedwork}

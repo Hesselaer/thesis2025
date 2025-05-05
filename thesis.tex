@@ -121,10 +121,10 @@ Note that a good thesis has figures and tables; examples can be found in Figure~
 \begin{table}[!htbp]
 \begin{center}
 \begin{tabular}{l|l}
-Column A & Column B\\
+Column A  Column B\\
 \hline
-Point 1 & Good\\
-Point 2 & Bad
+Point 1  Good\\
+Point 2  Bad
 \end{tabular}
 \end{center}
 \caption{Every thesis should have tables.}\label{atable}
@@ -163,27 +163,99 @@ A ranked hypergraph with $|r| = |o|$ is called symmetric.
 \begin{definition}
 Let $G, F$ be hypergraphs such that $|o^G| = |r^F|$, their composition is defined as follows:
 \begin{align}
-    G\circ F = (g', r', o^F, L^G\cup L^F, A^G\cup A^F)
+    G\circ F = (g', r', o^F, \L^G\sqcup \L^F, A^G\cup A^F)
 \end{align}
 
-We obtain $g'$ by the following procedure:
-\begin{enumerate}
-    \item $g' = (V,H) \defeq g^G \sqcup g^F$
-    \item For each $o^G_i\in o^G$, $v\in o^G_i$: $V\defeq V\setminus \{v\}$ and for each $(U, U')\in H$ with $v\in U'$ set $U' \defeq (U' \cup r^F_i) \setminus \{v\}$\\
-\end{enumerate}
+We obtain $g' = (V,H)$ by the following procedure:
+% \begin{enumerate}
+%     \item $g' = (V,H) \defeq g^G \sqcup g^F$
+%     \item For each $o^G_i\in o^G$, $v\in o^G_i$, if v is minimal and/or $r^F_i\neq\varnothing$:\\ $V\defeq V\setminus \{v\}$ and for each $(U, U')\in H$ with $v\in U'$, set $U' \defeq (U' \cup r^F_i) \setminus \{v\}$\\
+% \end{enumerate}
+
+\begin{align*}
+    V = (V^G\sqcup V^F) \setminus \bigcup_{i\in [|o^G|]}o^G_i
+\end{align*}
+
+\begin{align*}
+    H = ((H^G \sqcup H^F) \setminus \bigcup_{i\in [|o^G|]}\{(U, U') \in H^G : o^G_i \cap U' \neq \varnothing\})\\
+    \cup \bigcup_{i\in [|o^G|]}\{(U, (U' \setminus o_i^G)\cup r_i^F) :  (U,U') \in H^G, o^G_i \cap U' \neq \varnothing\}
+\end{align*}
+
+So for all $i$, in each arc $v$ that ends in a vertex in $o_i^G$, we replace that vertex in the arc with $r_i^F$. 
 
 And we obtain $r'$ by taking over the original $r^G$ and `connecting through' for vertices which are both minimal and maximal:
 \begin{align*}
-    r'_i = \{v\in r_i^G: v \text{ is not maximal}\}\cup \{v\in r_j^F : r^G_i \cap o_j^F \neq \varnothing,  j\in[|r^F|]\}
-   %  \begin{cases} 
-   %     \{v\in r_i^G: v \text{ is not maximal}\}& o _i^G \text{ contains at least 1 non-maximal vertex} \\
-   %     r_i^F & \text{else}
-   % \end{cases}
+    r'_i = \{v\in r_i^G: v \text{ is not maximal}\}\cup \{v\in r_j^F : r^G_i \cap o_j^G \neq \varnothing,  j\in[|r^F|]\}
 \end{align*}
 \end{definition}
 
-This composition allows for an identity $id_n$ namely $id_n = (([n], \varnothing), (\{i\})_{i\in n}, (\{i\})_{i\in n})$. It holds clearly from the definition that for a $(n,m)$ ranked graph $G$ holds: $$id_n \circ G = G \circ id_m = G$$
-\newpage
+This composition allows for an identity $id_n$ namely $id_n = (([n], \varnothing), (\{i\})_{i\in n}, (\{i\})_{i\in n})$.\vspace{5pt}
+
+\begin{lemma}
+The sequential composition of ranked hypergraphs has the following properties:
+    \begin{enumerate}
+        \item $\circ$ is associative
+        \item $id_n \circ G = G = G \circ id_m$ up to renaming of vertices
+    \end{enumerate}
+\end{lemma}
+
+\begin{proof}
+     Let $G,K,F$ be ranked hypergraphs. It is clear from the definition that $(G \circ K) \circ F = G \circ (K \circ F)$ if and only if their graphs and root interfaces are equal.
+
+    Let $r$, $r'$ be the root interfaces for $(G \circ K) \circ F$, $G \circ (K \circ F)$ respectively.
+    We expand the definition to find equality.
+    \begin{gather*}
+        r_i = \{v\in r_i^{G\circ K}: v \text{ is not maximal in } G\circ K\}\\
+        \cup \{v\in r_j^F : r^{G\circ K}_i \cap o_j^K \neq \varnothing,  j\in[|r^F|]\}\\
+        \intertext{Expand the first term}
+        \{v\in r_i^{G\circ K}: v \text{ is not maximal in } G\circ K\} = \{v\in r_i^G : v\text{ is not maximal in } G\} \\
+        \cup \{v\in r_j^K: r_i^G \cap o_j^G\neq \varnothing, v \text{ is not maximal in } G\circ K\}
+        \intertext{In the second set: a vertex in $r_j^K$ is not maximal in $G\circ K$ iff it is not maximal in $K$}
+        = \{v\in r_i^G : v\text{ is not maximal in } G\} \\
+        \cup \{v\in r_j^K: r_i^G \cap o_j^G\neq \varnothing, v \text{ is not maximal in } K\}\\
+        \intertext{Expanding the second term of $r_i$ we get, knowing $r^{G\circ K}_i\cap o_j^K\subseteq g^K$, that we had to connect through from $r^G_i$ to $r^K_j$ for some $j$:}
+        \{v \in r_j^F : r^{G \circ K}_i \cap o_j^K \neq \varnothing,  j\in[|r^F|]\} \\
+        = \{v \in r_k^F: r_i^G \cap o_j^G \neq \varnothing, r_j^K \cap o_k^K \neq \varnothing, j\in[|r^K|], k\in[|r^F|] \}
+        \intertext{and finally therefore we find}
+        r_i = \{v\in r_i^G : v\text{ is not maximal in } G\} \\
+        \cup \{v\in r_j^K: r_i^G \cap o_j^G\neq \varnothing, v \text{ is not maximal in } K, j\in[|r^F|]\}\\
+        \cup \{v \in r_k^F: r_i^G \cap o_j^G \neq \varnothing, r_j^K \cap o_k^K \neq \varnothing, j\in[|r^K|], k\in[|r^F|] \}
+    \end{gather*}
+
+    We do this same rewrite starting from the other graph: 
+    \begin{gather*}
+        r'_i = \{v\in r_i^{G}: v \text{ is not maximal in } G\}\\
+        \cup \{v\in r_j^{K\circ F} : r^{G}_i \cap o_j^G \neq \varnothing,  j\in[|r^{K\circ F}|]\}\\ 
+        = \{v\in r_i^{G}: v \text{ is not maximal in } G\}\\
+        \cup \{v\in r_j^K : r^{G}_i \cap o_j^G \neq \varnothing, v \text{ is not maximal in } K, j\in[|r^{K}|]\}\\
+        \cup \{v\in r_k^{F} : r^{G}_i \cap o_j^G \neq \varnothing, r^{K}_j\cap o^K_k \neq \varnothing,  j\in[|r^{K}|], k\in [|r^F|]\}
+    \end{gather*}
+
+    Which finally shows $$r_i = r'_i \quad \forall i\in [|r^G|]$$
+
+    \newpage
+
+    Let $g = (V, H)$, $g' = (V', H')$ be the graphs for $(G \circ H) \circ F$, $G \circ (H \circ F)$ respectively.
+
+    We expand the definition:
+    \begin{gather*}
+        V = (V^{G\circ H} \sqcup) \setminus \bigcup_{i\in [|o^H|]}o_i^H\\
+        = (((V^G\sqcup V^H) \setminus \bigcup_{[|o^G|]}o^G_i) \sqcup V^F) \setminus \bigcup_{i\in [|o^H|]}o_i^H
+        \intertext{From disjointness of $V^G$, $V^H$, and $V^F$ we get}
+        = (V^G \sqcup ((V^H \sqcup V^F) \setminus \bigcup_{[|o^H|]}o^H_i)) \setminus \bigcup_{i\in [|o^G|]}o_i^G = V'
+    \end{gather*}
+
+    Lastly for the arcs:
+    \begin{gather*}
+            H = ((H^{G\circ H} \sqcup H^F) \setminus \bigcup_{i\in [|o^H|]}\{(U, U') \in H^{G\circ H} o^H_i \cap U' \neq \varnothing\})\\
+    \cup \bigcup_{i\in [|o^H|]}\{(U, (U' \setminus o_i^H)\cup r_i^F) :  (U,U') \in H^{G\circ H}, o^H_i \cap U' \neq \varnothing\}\\
+    = ((((H^G \sqcup H^F) \setminus \bigcup_{i\in [|o^G|]}\{(U, U') \in H^G : o^G_i \cap U' \neq \varnothing\})\\
+    \cup \bigcup_{i\in [|o^G|]}\{(U, (U' \setminus o_i^G)\cup r_i^F) :  (U,U') \in H^G, o^G_i \cap U' \neq \varnothing\}) \sqcup H^F)
+    \setminus \bigcup_{i\in [|o^H|]}\{(U, U') \in H^{G\circ H} o^H_i \cap U' \neq \varnothing\})\\
+    \cup \bigcup_{i\in [|o^H|]}\{(U, (U' \setminus o_i^H)\cup r_i^F) :  (U,U') \in H^{G\circ H}, o^H_i \cap U' \neq \varnothing\}\\
+    \end{gather*}
+\end{proof}
+
 \section{Simplicial set over ranked term graphs}
 \subsection{Monoidal structure on interfaces}
 \begin{definition}
@@ -196,19 +268,20 @@ From this monoid we define a simplicial set using the nerve construction.
 \begin{definition}
     The \emph{nerve} $N(\M)$ of the monoid $\M$ is the simplicial set where:
     \begin{align*}
-        &N(\M)_n = \M^n\\
-        &d_i(m_1,\dots,m_n) = 
+        N(\M)_n = \M^n\\
+        d_i(m_1,\dots,m_n) = 
         \begin{cases}
-            (m_1,\dots,m_i \cup\times\cup m_{i+1}, \dots, m_n) & 0 < i < n\\
-            (m_2,\dots, m_n) & i = 0\\
-            (m_1,\dots,m_{n-1}) & i = n
+            (m_1,\dots,m_i \cup\times\cup m_{i+1}, \dots, m_n)  0 < i < n\\
+            (m_2,\dots, m_n)  i = 0\\
+            (m_1,\dots,m_{n-1})  i = n
         \end{cases}\\
-        &s_i(m_1,\dots,m_n) = (m_1, \dots, m_i, (\varnothing, \varnothing), m_{i+1}, \dots, m_n)\\
+        s_i(m_1,\dots,m_n) = (m_1, \dots, m_i, (\varnothing, \varnothing), m_{i+1}, \dots, m_n)\\
     \end{align*}
 \end{definition}
 
 \begin{definition}
 Define the simplicial set $\H$ by $\H_n = HG(n,n)$. The face and degeneracy maps of $\H$ are defined to be the unique maps $d^{\H}$, $s^{\H}$ making the following diagrams commute:
+
 \[
 \begin{tikzcd}
 \H_n \arrow{r}{d_i^{\H}} \arrow{d}{\pi_n} & \H_{n-1} \arrow{d}{\pi_{n-1}} \\

@@ -1,19 +1,19 @@
-
-%
-% template for Bachelor thesis
-% LIACS
-% January 7, 2019
-%
-
 \documentclass[12pt]{article}
 
-% include some packages
-\usepackage[left=2cm,right=2cm,top=2cm,bottom=3cm]{geometry}
+\usepackage[left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry}
 \usepackage{graphicx}
+\usepackage[dvipsnames]{xcolor}
 \usepackage{tikz}
+\input{tikz/interfacepoint.tikzstyles}
 \usepackage{tikz-cd}
+\usepackage{tikz-qtree}
 \usetikzlibrary{shapes,backgrounds,calc,arrows}
 \usepackage{microtype}
+
+\usepackage[setpagesize=false, colorlinks=true,urlcolor=red,pdftitle={Simplicial Coalgebras for Concurrent Regular Languages},pdfauthor={Hessel Sieburgh}]{hyperref}
+\frenchspacing
+\setlength\parindent{0pt}
+
 \usepackage{amsmath}
 \usepackage[utf8]{inputenc}
 \usepackage{amsfonts}
@@ -21,16 +21,17 @@
 \usepackage{amsthm}
 
 \newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}{Lemma}[section]
+\newtheorem{example}{Example}[section]
 
 \usepackage{bbm}
-\usepackage{geometry}
 \usepackage{csquotes}
-\usepackage[hidelinks]{hyperref}
 \usepackage{mathtools}
 \usepackage{parskip}
-
 \usepackage{mathtools}
+\usepackage{mathdots}
+%\usepackage[hidelinks]{hyperref}
 \newcommand{\defeq}{\vcentcolon=}
 \newcommand{\eqdef}{=\vcentcolon}
 
@@ -64,17 +65,13 @@
 \newcommand{\II}{\textbf{II}}
 \newcommand{\bigo}{\mathcal{O}}
 \renewcommand{\H}{\mathcal{H}}
-\usepackage[setpagesize=false,colorlinks=true,linkcolor=blue,urlcolor=red,pdftitle={An Interesting Title for a Thesis},pdfauthor={Your Name}]{hyperref}
-\setlength\parindent{0pt}
+\newcommand{\finP}{\mathcal{P}_{\omega}}
 
 \begin{document}
-\input{titlepage}
-
-% abstract and references should fit on one page
+\include{titlepage.tex}
 \begin{abstract}
 \noindent
-This is where you write an abstract that concisely summarizes your thesis.
-Keep it short. No references here --- exceptions do occur.
+This thesis introduces a construction of automata for concurrent languages. This is done by defining ranked hypergraphs, hypergraphs with interfaces that can be composed associatively. A simplicial set over these graphs is defined and we define F-coalgebras which give a nondeterministic transition model over the cells. The union of all paths of a tree resulting from a certain coalgebra gives a language of traces that support concurrent and sequential composition through the found operations on ranked hypergraphs. 
 \end{abstract}
 
 \bigskip
@@ -82,10 +79,6 @@ Keep it short. No references here --- exceptions do occur.
 \thispagestyle{empty}
 \tableofcontents
 \thispagestyle{empty}
-%Some (very few) people like a list of tables:
-%\listoftables
-%And some (even fewer) like a list of figures:
-%\listoffigures
 
 \clearpage
 \setcounter{page}{1}
@@ -94,58 +87,94 @@ Keep it short. No references here --- exceptions do occur.
 
 In this section we give an introduction to the problem addressed in this thesis.
 
+% \begin{figure}
+%     \centering
+%     \begin{tikzpicture}
+% 		\node [style={gra_point}, label={above:1}] (0) at (-1, 1.5) {};
+% 		\node [style={gra_point}, label={above:2}] (1) at (-1, 0) {};
+% 		\node [style={gra_point}, label={above:4}] (3) at (1, 1.5) {};
+% 		\node [style={int_point}] (5) at (-3, 1.5) {};
+% 		\node [style={int_point}] (6) at (-3, 0) {};
+% 		\node [style={int_point}] (7) at (-3, -1.75) {};
+% 		\node [style={int_point}] (8) at (3.75, 1.25) {};
+% 		\node [style={int_point}] (9) at (3.75, -1.25) {};
+% 		\node [style={gra_point}, label={above:6}] (10) at (1, -0.75) {};
+% 		\node [style={gra_point}, label={above:5}] (11) at (1, 0.5) {};
+% 		\node [label={above:a}] (12) at (0, 0) {};
+% 		\node [label={above:b}] (13) at (0, 1.5) {};
+% 		\node [style={gra_point}, label={above:3}] (14) at (0, -1.75) {};
+% 		\draw [style={int_edge}] (5) to (0);
+% 		\draw (1) to (12.center);
+% 		\draw [style={int_edge}] (7) to (14);
+% 		\draw [style={int_edge}] (6) to (1);
+% 		\draw [style={int_edge}] (9) to (14);
+% 		\draw [style={int_edge}] (9) to (10);
+% 		\draw [style={int_edge}] (8) to (3);
+% 		\draw [style={gra_edge}] (0) to (3);
+% 		\draw [style={gra_edge}] (12.center) to (11);
+% 		\draw [style={gra_edge}] (12.center) to (10);
+%     \end{tikzpicture}
+%     \caption{A Directed Acyclic (ranked) Hypergraph}
+%     \label{fig:intro-DAH}
+% \end{figure}
 
-\subsection{The situation}
 
-Sections may include subsections.
+\subsection{The problem}
 
-To make sure that this document renders correctly, execute these commands:
-\begin{quote}
-\begin{verbatim}
-pdflatex thesis
-bibtex thesis
-pdflatex thesis
-pdflatex thesis
-\end{verbatim}
-\end{quote}
-Here, the \verb|pdflatex| command may need to be executed three times in order to generate the table of contents and so on. 
-Note that a good thesis has figures and tables; examples can be found in Figure~\ref{afigure} and Table~\ref{atable}. And every thesis has references, like~\cite{whatagreatpaper}.
-
-\begin{figure}[!htbp]
-\begin{center}
-\includegraphics[height=2cm]{marxbrothers2}
-\end{center}
-\caption{Every thesis should have figures. Source: \href{www.marxbrothers.org}{\underline{\texttt{www.marxbrothers.org}}}.}\label{afigure}
-\end{figure}
-
-\begin{table}[!htbp]
-\begin{center}
-\begin{tabular}{l|l}
-Column A  Column B\\
-\hline
-Point 1  Good\\
-Point 2  Bad
-\end{tabular}
-\end{center}
-\caption{Every thesis should have tables.}\label{atable}
-\end{table}
-
-Final reminder: this template is just an example, if you want you can make adjustments; also discuss with your supervisor which layout he or she likes. But the front page should be as it is now.
-
-TODO: quite a lot!
+\subsection{Earlier research}
 
 \subsection{Thesis overview}
-It is recommended to end the introduction with an overview of the thesis. This chapter contains the introduction; Section~\ref{definitions} includes the definitions; Section~\ref{relatedwork} discusses related work; Section~\ref{experiments} describes the experiments and their outcome; Section~\ref{conclusions} concludes. By the way, different section titles are certainly possible.
 
-Also, produce a nice sentence with ``bachelor thesis'', LIACS and the names of the supervisors.
-\section{Ranked Term Graphs}
-
-\subsection{Definition and Structure}
+\newpage
+\section{Background}
+\subsection{Simplicial sets}
 \begin{definition}
-    A directed \emph{hypergraph} $(V,H)$ is a set of vertices $V$ and a set of \emph{hyperarcs} $H\subseteq \P(V)^2$.
+    A \emph{simplicial set} is a presheaf on the simplex category \( \Delta \), which means a simplicial set is a functor
+    \[
+    X \colon \Delta^{\mathrm{op}} \to \mathbf{Set}.
+    \]
+    
+    The category \( \Delta \) has as objects
+    \[
+    [n] = \{0 < 1 < \dots < n\}
+    \]
+    and as morphisms the order-preserving functions between them.
+    
+    Thus, a simplicial set \( X \) assigns to each \( [n] \in \Delta \) a set \( X_n = X([n]) \) of \emph{n-simplices}, and to each morphism \( \theta \colon [m] \to [n] \), a function \( X(\theta) \colon X_n \to X_m \).
+    
+    In particular, arise from:
+    \begin{itemize}
+      \item The \emph{face maps} \( d_i \colon X_n \to X_{n-1} \) are given by \( X(\delta^i) \), where \( \delta^i \colon [n-1] \to [n] \) skips \( i \).
+      \item The \emph{degeneracy maps} \( s_i \colon X_n \to X_{n+1} \) are given by \( X(\sigma^i) \), where \( \sigma^i \colon [n+1] \to [n] \) repeats \( i \).
+    \end{itemize}
+    
+    These satisfy the \emph{simplicial identities}:
+    \[
+    \begin{aligned}
+    d_i d_j &= d_{j-1} d_i && \text{if } i < j, \\
+    s_i s_j &= s_{j+1} s_i && \text{if } i \leq j, \\
+    d_i s_j &=
+    \begin{cases}
+    s_{j-1} d_i & \text{if } i < j, \\
+    \mathrm{id} & \text{if } i = j \text{ or } i = j+1, \\
+    s_j d_{i-1} & \text{if } i > j+1.
+    \end{cases}
+    \end{aligned}
+    \]
+
+    Given a set $S = S_0 \sqcup S_1 \sqcup \dots$ and functions $d_i: S_n\to S_{n-1}$, $s_i: S_n \to S_{n+1}$ satisfying the simplicial identities there is a unique simplicial set which has the same face and identity maps. This fact gives a second way to define simplicial sets, these two definitions are used interchangeably in this thesis.
 \end{definition}
 
-\emph{Notation:} A directed hypergraph containing no cycles is a Directed Acyclic Hypergraph (DAH)\\
+\emph{Notation:} The notation $[n] = \{0 < 1 < \dots < n\}$ is used frequently in this thesis, most importantly for long winded combinatorical proofs to prevent the constant use of temporary variables and unreadable subscripts. 
+
+\newpage
+\section{Definitions}
+\subsection{Ranked Hypergraphs}
+\begin{definition}
+    A directed \emph{hypergraph} $(V,H)$ is a finite set of vertices $V$ and a set of \emph{hyperarcs} $H\subseteq \P(V)^2$.
+\end{definition}
+
+\emph{Notation:} A directed hypergraph containing no cycles is a Directed Acyclic Hypergraph (DAH).\\
 
 \begin{definition}
 A \emph{ranked term hypergraph} $(g, r, o, \L, A)$ consists of:
@@ -157,107 +186,180 @@ A \emph{ranked term hypergraph} $(g, r, o, \L, A)$ consists of:
 \end{definition}
 \emph{Notation:} In this thesis we refer to ranked term hypergraphs as just hypergraphs as we will only be working with this kind. $HG(n,m)$ is the set of ranked term  hypergraphs of rank $(n,m)$
 
-A ranked hypergraph with $|r| = |o|$ is called symmetric.
+A ranked hypergraph with $|r| = |o|$ is called symmetric.\\
+
+\begin{example}
+    In figure \ref{fig:DAH-example} a ranked hypergraph is drawn. Left is the root interface, of rank 3, on the right is the output interface of rank 2. 
+
+    The full definition of this graph is as follows
+    \begin{itemize}
+        \item $V = \{1,2,3,4,5,6\}$
+        \item $H = \{(\{1\}, \{4\}), (\{2\}, \{5,6\})\}$
+        \item $r = (\{1\}, \{2\}, \{3\})$, $o = (\{4\}, \{3,6\})$
+        \item $A = \{a,b\}$, $\L((\{1\}, \{4\})) = b$, $\L((\{2\}, \{5,6\})) = a$
+    \end{itemize}
+    
+    \begin{figure}[h]
+    \centering
+    \begin{tikzpicture}
+		\node [style={gra_point}, label={above:1}] (0) at (-1, 1.5) {};
+		\node [style={gra_point}, label={above:2}] (1) at (-1, 0) {};
+		\node [style={gra_point}, label={above:4}] (3) at (1, 1.5) {};
+		\node [style={int_point}] (5) at (-3, 1.5) {};
+		\node [style={int_point}] (6) at (-3, 0) {};
+		\node [style={int_point}] (7) at (-3, -1.75) {};
+		\node [style={int_point}] (8) at (3.75, 1.25) {};
+		\node [style={int_point}] (9) at (3.75, -1.25) {};
+		\node [style={gra_point}, label={above:6}] (10) at (1, -0.75) {};
+		\node [style={gra_point}, label={above:5}] (11) at (1, 0.5) {};
+		\node [label={above:a}] (12) at (0, 0) {};
+		\node [label={above:b}] (13) at (0, 1.5) {};
+		\node [style={gra_point}, label={above:3}] (14) at (0, -1.75) {};
+		\draw [style={int_edge}] (5) to (0);
+		\draw (1) to (12.center);
+		\draw [style={int_edge}] (7) to (14);
+		\draw [style={int_edge}] (6) to (1);
+		\draw [style={int_edge}] (9) to (14);
+		\draw [style={int_edge}] (9) to (10);
+		\draw [style={int_edge}] (8) to (3);
+		\draw [style={gra_edge}] (0) to (3);
+		\draw [style={gra_edge}] (12.center) to (11);
+		\draw [style={gra_edge}] (12.center) to (10);
+    \end{tikzpicture}
+    \caption{A Directed Acyclic Hypergraph}
+    \label{fig:DAH-example}
+\end{figure}
+\end{example}
+
 
 \subsection{Composition of ranked hypergraphs}
 \begin{definition}
 Let $G, F$ be hypergraphs such that $|o^G| = |r^F|$, their composition is defined as follows:
 \begin{align}
-    G\circ F = (g', r', o^F, \L^G\sqcup \L^F, A^G\cup A^F)
+    G\otimes F = (g', r', o^F, \L^G\sqcup \L^F, A^G\cup A^F)
 \end{align}
 
 We obtain $g' = (V,H)$ by the following procedure:
+
+Define 
 % \begin{enumerate}
 %     \item $g' = (V,H) \defeq g^G \sqcup g^F$
 %     \item For each $o^G_i\in o^G$, $v\in o^G_i$, if v is minimal and/or $r^F_i\neq\varnothing$:\\ $V\defeq V\setminus \{v\}$ and for each $(U, U')\in H$ with $v\in U'$, set $U' \defeq (U' \cup r^F_i) \setminus \{v\}$\\
 % \end{enumerate}
 
 \begin{align*}
-    V = (V^G\sqcup V^F) \setminus \bigcup_{i\in [|o^G|]}o^G_i
+    V = (V^G + V^F) \setminus \bigcup_{i\in [|o^G|]}o^G_i
 \end{align*}
 
-\begin{align*}
-    H = ((H^G \sqcup H^F) \setminus \bigcup_{i\in [|o^G|]}\{(U, U') \in H^G : o^G_i \cap U' \neq \varnothing\})\\
-    \cup \bigcup_{i\in [|o^G|]}\{(U, (U' \setminus o_i^G)\cup r_i^F) :  (U,U') \in H^G, o^G_i \cap U' \neq \varnothing\}
-\end{align*}
+To get the hyperarcs we keep all elements but replace a vertex if it exists in an output, to do this neatly we define a pair of functions:
+
+\[
+\psi_{r^F, o^G}(v) := 
+\begin{cases}
+\displaystyle\bigcup_{\substack{i \in [n] \\ v \in o^G_i}} r^F_i & \text{if } \exists i \in [n] \text{ such that } v \in o^G_i \\
+\{v\} & \text{otherwise}
+\end{cases}
+\]
+
+\[
+\Psi_{r^F, o^G}(U') := \bigcup_{v \in U'} \psi_{r^F, o^G}(v)
+\]
+
+\[
+H := \left\{ \left(U, \Psi_{r^F, o^G}(U')\right) : (U, U') \in H^G \right\} \cup H^F
+\]
 
 So for all $i$, in each arc $v$ that ends in a vertex in $o_i^G$, we replace that vertex in the arc with $r_i^F$. 
 
 And we obtain $r'$ by taking over the original $r^G$ and `connecting through' for vertices which are both minimal and maximal:
 \begin{align*}
-    r'_i = \{v\in r_i^G: v \text{ is not maximal}\}\cup \{v\in r_j^F : r^G_i \cap o_j^G \neq \varnothing,  j\in[|r^F|]\}
+    r'_i = \Psi_{r^F, o^G}(r^G_i)
 \end{align*}
 \end{definition}
 
 This composition allows for an identity $id_n$ namely $id_n = (([n], \varnothing), (\{i\})_{i\in n}, (\{i\})_{i\in n})$.\vspace{5pt}
 
-\begin{lemma}
-The sequential composition of ranked hypergraphs has the following properties:
-    \begin{enumerate}
-        \item $\circ$ is associative
-        \item $id_n \circ G = G = G \circ id_m$ up to renaming of vertices
-    \end{enumerate}
+\begin{lemma}\label{lem:psieq}
+    Let $G,K,F$ be a DAH and $U\subseteq V^G$ a set of vertices. This identity holds:
+    \[
+        \Psi_{r^F, o^K}\circ \Psi_{r^K, o^G}(U) = \Psi_{r^F\otimes r^K, o^G}(U)
+    \]
 \end{lemma}
 
 \begin{proof}
-     Let $G,K,F$ be ranked hypergraphs. It is clear from the definition that $(G \circ K) \circ F = G \circ (K \circ F)$ if and only if their graphs and root interfaces are equal.
+    We prove the lemma for a singleton, this then extends to all subsets $U\subseteq V^G$. Let $v\in V^G$, we proceed by using the definitions:
+    \begin{align*}
+        \Psi_{r^F, o^K}\circ \psi_{r^K, o^G}(v) &= 
+        \begin{cases}
+            \{v\} & v\notin \cup_i o_i^G\\
+            \Psi_{r^F, o^K}\left(\bigcup_{\substack{i \in [|r^K|] \\ v \in o^G_i}} r^K_i\right) & \text{else}
+        \end{cases}\\
+        \intertext{Because both unions are finite we can exchange them: }
+        &= 
+        \begin{cases}
+            \{v\} & v\notin \cup_i o_i^G\\
+            \bigcup_{\substack{i \in [|r^K|] \\ v \in o^G_i}} \Psi_{r^F, o^K} (r^K_i) & \text{else}\\
+        \end{cases}\\
+        \intertext{By definition $r^{K\otimes F}_i \defeq \Psi_{r^F, o^K} (r^K_i)$ and hence}
+        &=
+        \begin{cases}
+            \{v\} & v\notin \cup_i o_i^G\\
+            \bigcup_{\substack{i \in [|r^{K\otimes F}|] \\ v \in o^G_i}} r^{K\otimes F}_i & \text{else}\\
+        \end{cases}\\
+        &= \psi_{r^F\otimes r^K, o^G}(v)
+    \end{align*}\\
 
-    Let $r$, $r'$ be the root interfaces for $(G \circ K) \circ F$, $G \circ (K \circ F)$ respectively.
-    We expand the definition to find equality.
-    \begin{gather*}
-        r_i = \{v\in r_i^{G\circ K}: v \text{ is not maximal in } G\circ K\}\\
-        \cup \{v\in r_j^F : r^{G\circ K}_i \cap o_j^K \neq \varnothing,  j\in[|r^F|]\}\\
-        \intertext{Expand the first term}
-        \{v\in r_i^{G\circ K}: v \text{ is not maximal in } G\circ K\} = \{v\in r_i^G : v\text{ is not maximal in } G\} \\
-        \cup \{v\in r_j^K: r_i^G \cap o_j^G\neq \varnothing, v \text{ is not maximal in } G\circ K\}
-        \intertext{In the second set: a vertex in $r_j^K$ is not maximal in $G\circ K$ iff it is not maximal in $K$}
-        = \{v\in r_i^G : v\text{ is not maximal in } G\} \\
-        \cup \{v\in r_j^K: r_i^G \cap o_j^G\neq \varnothing, v \text{ is not maximal in } K\}\\
-        \intertext{Expanding the second term of $r_i$ we get, knowing $r^{G\circ K}_i\cap o_j^K\subseteq g^K$, that we had to connect through from $r^G_i$ to $r^K_j$ for some $j$:}
-        \{v \in r_j^F : r^{G \circ K}_i \cap o_j^K \neq \varnothing,  j\in[|r^F|]\} \\
-        = \{v \in r_k^F: r_i^G \cap o_j^G \neq \varnothing, r_j^K \cap o_k^K \neq \varnothing, j\in[|r^K|], k\in[|r^F|] \}
-        \intertext{and finally therefore we find}
-        r_i = \{v\in r_i^G : v\text{ is not maximal in } G\} \\
-        \cup \{v\in r_j^K: r_i^G \cap o_j^G\neq \varnothing, v \text{ is not maximal in } K, j\in[|r^F|]\}\\
-        \cup \{v \in r_k^F: r_i^G \cap o_j^G \neq \varnothing, r_j^K \cap o_k^K \neq \varnothing, j\in[|r^K|], k\in[|r^F|] \}
-    \end{gather*}
+    Taking unions of singletons then yields:
+    \[
+        \Psi_{r^F, o^K}\circ \Psi_{r^K, o^G}(U) = \Psi_{r^F\otimes r^K, o^G}(U)
+    \]
+\end{proof}
 
-    We do this same rewrite starting from the other graph: 
-    \begin{gather*}
-        r'_i = \{v\in r_i^{G}: v \text{ is not maximal in } G\}\\
-        \cup \{v\in r_j^{K\circ F} : r^{G}_i \cap o_j^G \neq \varnothing,  j\in[|r^{K\circ F}|]\}\\ 
-        = \{v\in r_i^{G}: v \text{ is not maximal in } G\}\\
-        \cup \{v\in r_j^K : r^{G}_i \cap o_j^G \neq \varnothing, v \text{ is not maximal in } K, j\in[|r^{K}|]\}\\
-        \cup \{v\in r_k^{F} : r^{G}_i \cap o_j^G \neq \varnothing, r^{K}_j\cap o^K_k \neq \varnothing,  j\in[|r^{K}|], k\in [|r^F|]\}
-    \end{gather*}
+Which lets us prove the following theorem:
 
-    Which finally shows $$r_i = r'_i \quad \forall i\in [|r^G|]$$
+\begin{theorem}\label{thm:assoc}
+The sequential composition of ranked hypergraphs has the following properties:
+    \begin{enumerate}
+        \item $\otimes$ is associative
+        \item $id_n \otimes G = G = G \otimes id_m$ up to renaming of vertices
+    \end{enumerate}
+\end{theorem}
 
-    \newpage
+\begin{proof}
+Let $G,K,F$ be ranked hypergraphs. It is clear from the definition that $(G \otimes K) \otimes F = G \otimes (K \otimes F)$ if and only if their graphs and root interfaces are equal.
+     
+Let $r$, $r'$ be the root interfaces for $(G \otimes K) \otimes F$, $G \otimes (K \otimes F)$ respectively.  
+We expand the definition and use lemma \ref{lem:psieq} to show that $r = r'$. Let $i\in [|r^G|]$, we get:
 
-    Let $g = (V, H)$, $g' = (V', H')$ be the graphs for $(G \circ H) \circ F$, $G \circ (H \circ F)$ respectively.
+\begin{align*}
+    r_i = \Psi_{r^F, o^k}(r^{G\otimes K}_i) = \Psi_{r^F, o^k}(\Psi_{r^K, o^G}(r^G_i)) = \Psi_{r^{K\otimes F}, o^G}(r_i) = r'_i\\
+\end{align*}
+
+
+    Let $g = (V, H)$, $g' = (V', H')$ be the graphs for $(G \otimes K) \otimes F$, $G \otimes (K \otimes F)$ respectively.
 
     We expand the definition:
     \begin{gather*}
-        V = (V^{G\circ H} \sqcup) \setminus \bigcup_{i\in [|o^H|]}o_i^H\\
-        = (((V^G\sqcup V^H) \setminus \bigcup_{[|o^G|]}o^G_i) \sqcup V^F) \setminus \bigcup_{i\in [|o^H|]}o_i^H
-        \intertext{From disjointness of $V^G$, $V^H$, and $V^F$ we get}
-        = (V^G \sqcup ((V^H \sqcup V^F) \setminus \bigcup_{[|o^H|]}o^H_i)) \setminus \bigcup_{i\in [|o^G|]}o_i^G = V'
+        V = (V^{G\otimes K} + V^F) \setminus \bigcup_{i\in [|o^K|]}o_i^K\\
+        = (((V^G + V^K) \setminus \bigcup_{i\in[|o^G|]}o^G_i) + V^F) \setminus \bigcup_{i\in [|o^K|]}o_i^K
+        \intertext{From disjointness the inclusion of $V^G$, $V^K$, and $V^F$ into their coproduct we get}
+        = (V^G + ((V^K + V^F) \setminus \bigcup_{i\in[|o^K|]}o^K_i)) \setminus \bigcup_{i\in [|o^G|]}o_i^G = V'
     \end{gather*}
 
     Lastly for the arcs:
-    \begin{gather*}
-            H = ((H^{G\circ H} \sqcup H^F) \setminus \bigcup_{i\in [|o^H|]}\{(U, U') \in H^{G\circ H} o^H_i \cap U' \neq \varnothing\})\\
-    \cup \bigcup_{i\in [|o^H|]}\{(U, (U' \setminus o_i^H)\cup r_i^F) :  (U,U') \in H^{G\circ H}, o^H_i \cap U' \neq \varnothing\}\\
-    = ((((H^G \sqcup H^F) \setminus \bigcup_{i\in [|o^G|]}\{(U, U') \in H^G : o^G_i \cap U' \neq \varnothing\})\\
-    \cup \bigcup_{i\in [|o^G|]}\{(U, (U' \setminus o_i^G)\cup r_i^F) :  (U,U') \in H^G, o^G_i \cap U' \neq \varnothing\}) \sqcup H^F)
-    \setminus \bigcup_{i\in [|o^H|]}\{(U, U') \in H^{G\circ H} o^H_i \cap U' \neq \varnothing\})\\
-    \cup \bigcup_{i\in [|o^H|]}\{(U, (U' \setminus o_i^H)\cup r_i^F) :  (U,U') \in H^{G\circ H}, o^H_i \cap U' \neq \varnothing\}\\
-    \end{gather*}
+    \begin{align*}
+        H &= \left\{ \left(U, \Psi_{r^F, o^K}(U')\right) : (U, U') \in H^{G\otimes K} \right\} \cup H^F\\
+        &= \left\{ \left(U, \Psi_{r^F, o^K}(\Psi_{r^K, o^G}(U'))\right) : (U, U') \in H^G \right\}
+        \cup \left\{ \left(U, \Psi_{r^F, o^K}(U')\right) : (U, U') \in H^K \right\} \cup H^F\\
+        \intertext{By lemma \ref{lem:psieq} we have}
+        &= \left\{ \left(U, \Psi_{r^{F\otimes K}, o^G}(U')\right) : (U, U') \in H^G \right\}
+        \cup \left\{ \left(U, \Psi_{r^F, o^K}(U')\right) : (U, U') \in H^K \right\} \cup H^F\\
+        &= \left\{ \left(U, \Psi_{r^{K \otimes F}, o^G}(U')\right) : (U, U') \in H^G \right\} \cup H^{K \otimes F}\\
+        &= H'
+    \end{align*}
 \end{proof}
 
-\section{Simplicial set over ranked term graphs}
-\subsection{Monoidal structure on interfaces}
+\subsection{Simplicial set over ranked term graphs}
 \begin{definition}
     Let $V$ be the vertex set of a ranked hypergraph.\\
     We define the monoid $\M = (\P(V)^2, (\varnothing, \varnothing), \cup\times\cup)$. 
@@ -307,10 +409,111 @@ $\H$ is a simplicial set precisely because we inherit the face and degeneracy ma
     $\pi_n$ is a simplicial morphism by commutation of the given diagrams. Since $N(\M)$ is a simplicial set by definition and the diagrams commute the simplicial identities also hold for $d^{\H}$ and $s^{\H}$. Therefore $\H$ is a simplicial set.
 \end{proof}
 
+\subsection{Coalgebraic behaviour}
+To add behaviour to the hypergraph simplicial set we define pointed F-coalgebras by the endofunctor
+
+\begin{definition}
+    \[
+        F: sSet \to sSet, \quad FX = \B \times \finP(X \sqcup \uparrow X)^{\H}
+    \]
+    
+    Here each state therefore outputs a boolean in $\B$ indicating if it's an accepting state, and transition maps $\H \to \finP(X \sqcup \uparrow X)$. Here the $\finP$ is the finite powerset on simplicial sets $\finP: sSet \to sSet$ applied to $X\sqcup \uparrow X$.
+    
+    Let $\Delta$ be the simplex category, we define $(-)^{\rhd}$ to be the functor which adds a new maximal element to a powerset. Precomposing this with the presheaf $X$ gives $\uparrow X = X\otimes (-)^{\rhd}$. Thus from this construction, given an $x\in X_n$ we can only transition to elements in $X_m$ where $m\geq n$.
+    
+    We also define $F(f) = \B\times\finP(f \sqcup \uparrow f)^{\H}$, which just applies $f$ to all transitioned-to elements.
+\end{definition}
+\vspace{2em}
+\begin{definition}
+    A pointed $F$-coalgebra over a functor $F$ is a triple $(X, \alpha: X\to FX, x_0)$ where $X$ is the \emph{carrier set} and $x_0$ is the \emph{base} or in our case an \emph{initial state}.
+\end{definition}
+
+Through this definition we find out what a coalgebra does on our set. If we follow the repeated iteration of this coalgebra
+\[
+    X\xrightarrow{\alpha} FX \xrightarrow{F\alpha} FFX \xrightarrow{FF\alpha} \dots
+\]
+
+We get by definition of $F(f)$ that $\alpha$ gets recursively applied to the transitioned-to elements. This will look like
+
+\begin{align*}
+    \alpha(x_0) &= (0, \{g_{01}\mapsto x_{01}, g_{02}\mapsto x_{02}, \dots\})\\
+    \implies \alpha\circ\alpha(x_0) &= (0, \{(g_{01}\mapsto (0, \{g_{011}\mapsto x_{011}, g_{012}\mapsto x_{012}\})),\\
+    &\hspace{40pt}(g_{02}\mapsto (0, \{g_{021}\mapsto x_{021}, g_{022}\mapsto x_{022}\})), \dots\})
+\end{align*}
+
+This is a tree structure with $x_0$ as root, $x_{01}, x_{02}, \dots$ as children etcetera. The transitions are through the hypergraphs. Non-accepting states are red, and accepting states are indicated by a green node. In figure \ref{ex:coalg-tree} a tree is visualized for some coalgebra. Here $x_{012}$ is an accepting state.
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}[->, level distance=3cm,
+            level 1/.style={sibling distance=4cm},
+            level 2/.style={sibling distance=3cm},
+            edge from parent node/.style={black},
+            every node/.style={red}]
+    \node (Root) {$x_0$}
+        child {
+            node {$x_{01}$}
+            child { 
+                node {$x_{011}$}
+                child {
+                    node {$\iddots\hspace{20pt}$}
+                }
+                child {
+                    node {$\hspace{20pt}\ddots$}
+                }
+                edge from parent node[left, black] {$g_{011}$} 
+            }
+            child { 
+                node [Green] {$x_{012}$}
+                child {
+                    node {$\vdots$}
+                }
+                edge from parent node[right, black] {$g_{012}$}
+            }
+            edge from parent node[left, black] {$g_{01}$}
+        }
+        child {
+            node {$x_{02}$}
+            child { 
+                node {$x_{021}$}
+                child {
+                    node {$\vdots$}
+                }
+                edge from parent node[left, black] {$g_{021}$}
+            }
+            child { 
+                node {$x_{022}$}
+                child {
+                    node {$\iddots\hspace{20pt}$}
+                }
+                child {
+                    node {$\hspace{20pt}\ddots$}
+                }
+                edge from parent node[right, black] {$g_{022}$}
+            }
+            edge from parent node[right, black] {$g_{02}$}
+        };
+    \end{tikzpicture}
+    \caption{Tree from iteration of some $F$-coalgebra}
+    \label{ex:coalg-tree}
+\end{figure}
+
+\begin{definition}
+    Given coalgebras $(X, \alpha: X\to FX, x_0)$, $(Y, \beta: Y\to FY, y_0)$, a function $f: X\to Y$ is a homomorphism if and only if
+    \begin{align*}
+        F(f)\otimes \alpha = \beta \otimes f\\
+        f(x_0) = y_0
+    \end{align*}
+\end{definition}
+
+While a strict characterisation of the homomorphisms has evaded me thus far. It is known that the following property holds:
+
+\begin{lemma}
+    The homomorphisms on $FX = \H \times \finP(X \sqcup \uparrow X)$ preserve transitions. That is, if $\alpha (x) = (g_x, \{x_1, x_2, \dots\})$ then $\beta(f(x)) = (g_x, \{f(x_1), f(x_2), \dots\})$
+\end{lemma}
+
 \newpage
 \section{Related Work}\label{relatedwork}
-
-\section{Experiments}\label{experiments}
 
 \section{Conclusions and Further Research}\label{conclusions}
 

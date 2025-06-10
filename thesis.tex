@@ -66,6 +66,7 @@
 \newcommand{\bigo}{\mathcal{O}}
 \renewcommand{\H}{\mathcal{H}}
 \newcommand{\finP}{\mathcal{P}_{\omega}}
+\newcommand{\Set}{\mathbf{Set}}
 
 \begin{document}
 \include{titlepage.tex}
@@ -127,26 +128,54 @@ In this section we give an introduction to the problem addressed in this thesis.
 
 \newpage
 \section{Background}
+\subsection{Presheaves}
+\begin{definition}
+    Let $C$,$D$ be categories, and $F,G: C\to D$ be functors. Then a \emph{natural transformation} $\mu: F\Rightarrow G$ from $F$ to $G$ is a family of morphisms such that:
+    \begin{enumerate}
+        \item for all $x\in C$ there exists a morphism $\mu_x: F(x)\to G(x)$ called the component at $x$
+        \item for all $x,y\in C$ and all morphisms $f: x\to y$ the following diagram commutes:
+        \[
+            \begin{tikzcd}
+            F(x) \arrow{r}{F(f)} \arrow{d}{\mu_x} & F(y) \arrow{d}{\mu_y} \\
+            G(x) \arrow{r}{G(f)} & G(y)
+            \end{tikzcd}
+        \]
+    \end{enumerate}
+\end{definition}
+
+\begin{definition}
+    Let $C$ be a category, a \emph{presheaf} is a functor \[
+        F: C^{op}\to \Set
+    \]
+    The collection of all presheaves on a category forms a category with as morphisms the natural transformations between the presheaves.
+\end{definition}
+
 \subsection{Simplicial sets}
 \begin{definition}
-    A \emph{simplicial set} is a presheaf on the simplex category \( \Delta \), which means a simplicial set is a functor
+    The simplex category $\Delta$ has as objects
     \[
-    X \colon \Delta^{\mathrm{op}} \to \mathbf{Set}.
-    \]
-    
-    The category \( \Delta \) has as objects
-    \[
-    [n] = \{0 < 1 < \dots < n\}
+        [n] = \{0 < 1 < \dots < n\}
     \]
     and as morphisms the order-preserving functions between them.
+
+    For all $n\in\N$, $i\in [n]$ we define the coface map $\delta^n_i: [n-1]\to [n]$ as the injective order preserving map which has $(\delta^n_i)^{-1}(i) = \varnothing$. So the map 'misses' $i$ and all other elements of $[n]$ are 'hit'.
+
+    For all $n\in\N$, $i\in [n]$ we define the coface map $\sigma^n_i: [n-1]\to [n]$ as the surjective order preserving map which has $|(\sigma^n_i)^{-1}(i)| = 2$, $|(\sigma^n_i)^{-1}(j)| = 1$ $\forall j\neq i$. So the map 'hits' $i$ twice, and all other $j$ once.
+
+    All morphisms of $\Delta$ are generated from the coface and codegeneracy maps.
+\end{definition}
+
+\textit{Notation: } $\delta_i^n$, $\sigma_i^n$ and so on, are just referred to as $\delta_i$, $\sigma_i$ etc. As the exact $n$ is not necessary for most applications. 
+
+\begin{definition}
+    A \emph{simplicial set} is a presheaf on \( \Delta \), which means a simplicial set is a functor
+    \[
+    X \colon \Delta^{\mathrm{op}} \to \Set
+    \]
     
     Thus, a simplicial set \( X \) assigns to each \( [n] \in \Delta \) a set \( X_n = X([n]) \) of \emph{n-simplices}, and to each morphism \( \theta \colon [m] \to [n] \), a function \( X(\theta) \colon X_n \to X_m \).
     
-    In particular, arise from:
-    \begin{itemize}
-      \item The \emph{face maps} \( d_i \colon X_n \to X_{n-1} \) are given by \( X(\delta^i) \), where \( \delta^i \colon [n-1] \to [n] \) skips \( i \).
-      \item The \emph{degeneracy maps} \( s_i \colon X_n \to X_{n+1} \) are given by \( X(\sigma^i) \), where \( \sigma^i \colon [n+1] \to [n] \) repeats \( i \).
-    \end{itemize}
+    In particular, we have $X(\delta_i) = d_i$ where $d_i: X_n\to X_{n-1}$ omits the $i$-th element from an $n$-simplex. And $X(\sigma_i) = s_i$ where $s_i: X_n \to X_{n+1}$ repeats the $i$-th element in the simplex.
     
     These satisfy the \emph{simplicial identities}:
     \[
@@ -162,10 +191,8 @@ In this section we give an introduction to the problem addressed in this thesis.
     \end{aligned}
     \]
 
-    Given a set $S = S_0 \sqcup S_1 \sqcup \dots$ and functions $d_i: S_n\to S_{n-1}$, $s_i: S_n \to S_{n+1}$ satisfying the simplicial identities there is a unique simplicial set which has the same face and identity maps. This fact gives a second way to define simplicial sets, these two definitions are used interchangeably in this thesis.
+    Given a collection of sets $S = S_0 \sqcup S_1 \sqcup \dots$ and functions $d_i: S_n\to S_{n-1}$, $s_i: S_n \to S_{n+1}$ satisfying the simplicial identities there is a unique simplicial set which has the same face and identity maps. This fact gives a second way to define simplicial sets, these two definitions are used interchangeably in this thesis.
 \end{definition}
-
-\emph{Notation:} The notation $[n] = \{0 < 1 < \dots < n\}$ is used frequently in this thesis, most importantly for long winded combinatorical proofs to prevent the constant use of temporary variables and unreadable subscripts. 
 
 \newpage
 \section{Definitions}
@@ -180,7 +207,7 @@ In this section we give an introduction to the problem addressed in this thesis.
 A \emph{ranked term hypergraph} $(g, r, o, \L, A)$ consists of:
 \begin{itemize}
 \item A DAH $g$,
-\item Sequences $r = (r_i)_{i\in[|r|]}$, $o = (o_i)_{i\in[|o|]}$ $r_i, o_i\in \P(V)$ denoting the root and variable interfaces. $o_i$ contains only maximal vertices. We refer to $(|r|, |o|)$ as the \emph{rank} of this graph.
+\item Finite sequences $r = (r_i)_i$, $o = (o_i)_i$ $r_i, o_i\in \P(V)$ denoting the root and variable interfaces. $o_i$ contains only maximal vertices. We refer to $(|r|, |o|)$ as the \emph{rank} of this graph.
 \item An action set $A$ and a hyperarc labelling function $\L: H\to A$
 \end{itemize}
 \end{definition}
@@ -248,7 +275,7 @@ Define
 % \end{enumerate}
 
 \begin{align*}
-    V = (V^G + V^F) \setminus \bigcup_{i\in [|o^G|]}o^G_i
+    V = (V^G + V^F) \setminus \bigcup_{i\leq |o^G|}o^G_i
 \end{align*}
 
 To get the hyperarcs we keep all elements but replace a vertex if it exists in an output, to do this neatly we define a pair of functions:
@@ -256,7 +283,7 @@ To get the hyperarcs we keep all elements but replace a vertex if it exists in a
 \[
 \psi_{r^F, o^G}(v) := 
 \begin{cases}
-\displaystyle\bigcup_{\substack{i \in [n] \\ v \in o^G_i}} r^F_i & \text{if } \exists i \in [n] \text{ such that } v \in o^G_i \\
+\displaystyle\bigcup_{\substack{i\leq  n \\ v \in o^G_i}} r^F_i & \text{if } \exists i \in [n] \text{ such that } v \in o^G_i \\
 \{v\} & \text{otherwise}
 \end{cases}
 \]
@@ -277,37 +304,37 @@ And we obtain $r'$ by taking over the original $r^G$ and `connecting through' fo
 \end{align*}
 \end{definition}
 
-This composition allows for an identity $id_n$ namely $id_n = (([n], \varnothing), (\{i\})_{i\in n}, (\{i\})_{i\in n})$.\vspace{5pt}
+This composition allows for a left identity $id_n$ namely $id_n = ((\{1,2,\dots,n\}, \varnothing), (\{i\})_{i\in n}, (\{i\})_{i\in n})$.\vspace{5pt}
 
 \begin{lemma}\label{lem:psieq}
-    Let $G,K,F$ be a DAH and $U\subseteq V^G$ a set of vertices. This identity holds:
+    Let $G,K,F$ be a DAH and $U\subseteq V^G$ a set of vertices. It holds that:
     \[
         \Psi_{r^F, o^K}\circ \Psi_{r^K, o^G}(U) = \Psi_{r^F\otimes r^K, o^G}(U)
     \]
 \end{lemma}
 
 \begin{proof}
-    We prove the lemma for a singleton, this then extends to all subsets $U\subseteq V^G$. Let $v\in V^G$, we proceed by using the definitions:
+    We prove the lemma for a singleton, this then extends trivially to all subsets $U\subseteq V^G$. Let $v\in V^G$, we proceed by using the definitions:
     \begin{align*}
         \Psi_{r^F, o^K}\circ \psi_{r^K, o^G}(v) &= 
         \begin{cases}
             \{v\} & v\notin \cup_i o_i^G\\
-            \Psi_{r^F, o^K}\left(\bigcup_{\substack{i \in [|r^K|] \\ v \in o^G_i}} r^K_i\right) & \text{else}
+            \Psi_{r^F, o^K}\left(\bigcup_{\substack{i \leq |r^K| \\ v \in o^G_i}} r^K_i\right) & \text{else}
         \end{cases}\\
         \intertext{Because both unions are finite we can exchange them: }
         &= 
         \begin{cases}
             \{v\} & v\notin \cup_i o_i^G\\
-            \bigcup_{\substack{i \in [|r^K|] \\ v \in o^G_i}} \Psi_{r^F, o^K} (r^K_i) & \text{else}\\
+            \bigcup_{\substack{i \leq |r^K| \\ v \in o^G_i}} \Psi_{r^F, o^K} (r^K_i) & \text{else}\\
         \end{cases}\\
         \intertext{By definition $r^{K\otimes F}_i \defeq \Psi_{r^F, o^K} (r^K_i)$ and hence}
         &=
         \begin{cases}
             \{v\} & v\notin \cup_i o_i^G\\
-            \bigcup_{\substack{i \in [|r^{K\otimes F}|] \\ v \in o^G_i}} r^{K\otimes F}_i & \text{else}\\
+            \bigcup_{\substack{i\leq  |r^{K\otimes F}| \\ v \in o^G_i}} r^{K\otimes F}_i & \text{else}\\
         \end{cases}\\
         &= \psi_{r^F\otimes r^K, o^G}(v)
-    \end{align*}\\
+    \end{align*}
 
     Taking unions of singletons then yields:
     \[
@@ -321,20 +348,19 @@ Which lets us prove the following theorem:
 The sequential composition of ranked hypergraphs has the following properties:
     \begin{enumerate}
         \item $\otimes$ is associative
-        \item $id_n \otimes G = G = G \otimes id_m$ up to renaming of vertices
+        \item $id_n \otimes G = G$
     \end{enumerate}
 \end{theorem}
 
 \begin{proof}
-Let $G,K,F$ be ranked hypergraphs. It is clear from the definition that $(G \otimes K) \otimes F = G \otimes (K \otimes F)$ if and only if their graphs and root interfaces are equal.
-     
-Let $r$, $r'$ be the root interfaces for $(G \otimes K) \otimes F$, $G \otimes (K \otimes F)$ respectively.  
-We expand the definition and use lemma \ref{lem:psieq} to show that $r = r'$. Let $i\in [|r^G|]$, we get:
-
-\begin{align*}
-    r_i = \Psi_{r^F, o^k}(r^{G\otimes K}_i) = \Psi_{r^F, o^k}(\Psi_{r^K, o^G}(r^G_i)) = \Psi_{r^{K\otimes F}, o^G}(r_i) = r'_i\\
-\end{align*}
-
+    Let $G,K,F$ be ranked hypergraphs. It is clear from the definition that $(G \otimes K) \otimes F = G \otimes (K \otimes F)$ if and only if their graphs and root interfaces are equal.
+         
+    Let $r$, $r'$ be the root interfaces for $(G \otimes K) \otimes F$, $G \otimes (K \otimes F)$ respectively.  
+    We expand the definition and use lemma \ref{lem:psieq} to show that $r = r'$. Let $i\in [|r^G|]$, we get:
+    
+    \begin{align*}
+        r_i = \Psi_{r^F, o^k}(r^{G\otimes K}_i) = \Psi_{r^F, o^k}(\Psi_{r^K, o^G}(r^G_i)) = \Psi_{r^{K\otimes F}, o^G}(r_i) = r'_i\\
+    \end{align*}
 
     Let $g = (V, H)$, $g' = (V', H')$ be the graphs for $(G \otimes K) \otimes F$, $G \otimes (K \otimes F)$ respectively.
 
@@ -371,42 +397,79 @@ From this monoid we define a simplicial set using the nerve construction.
     The \emph{nerve} $N(\M)$ of the monoid $\M$ is the simplicial set where:
     \begin{align*}
         N(\M)_n = \M^n\\
-        d_i(m_1,\dots,m_n) = 
+        d^{\M}_i(m_1,\dots,m_n) = 
         \begin{cases}
-            (m_1,\dots,m_i \cup\times\cup m_{i+1}, \dots, m_n)  0 < i < n\\
-            (m_2,\dots, m_n)  i = 0\\
-            (m_1,\dots,m_{n-1})  i = n
+            (m_1,\dots,m_i \cup\times\cup m_{i+1}, \dots, m_n) & 0 < i < n\\
+            (m_2,\dots, m_n) & i = 0\\
+            (m_1,\dots,m_{n-1}) & i = n
         \end{cases}\\
-        s_i(m_1,\dots,m_n) = (m_1, \dots, m_i, (\varnothing, \varnothing), m_{i+1}, \dots, m_n)\\
+        s^{\M}_i(m_1,\dots,m_n) = (m_1, \dots, m_i, (\varnothing, \varnothing), m_{i+1}, \dots, m_n)\\
     \end{align*}
 \end{definition}
 
 \begin{definition}
-Define the simplicial set $\H$ by $\H_n = HG(n,n)$. The face and degeneracy maps of $\H$ are defined to be the unique maps $d^{\H}$, $s^{\H}$ making the following diagrams commute:
-
-\[
-\begin{tikzcd}
-\H_n \arrow{r}{d_i^{\H}} \arrow{d}{\pi_n} & \H_{n-1} \arrow{d}{\pi_{n-1}} \\
-N(\M)_n \arrow{r}{d_i^\M} & N(\M)_{n-1}
-\end{tikzcd}
-\quad
-\begin{tikzcd}
-\H_n \arrow{r}{s_j^{\H}} \arrow{d}{\pi_n} & \H_{n+1} \arrow{d}{\pi_{n+1}} \\
-N(\M)_n \arrow{r}{s_j^\M} & N(\M)_{n+1}
-\end{tikzcd}
-\]
-
-Where $\pi_n$ is the projection onto the interfaces given by: $\pi_n((g, r, o, \L, A)) = ((r_i, o_i))_{i\in [n]}$. That is, the face and degeneracy maps of $\H$ are defined by the underlying monoidal nerve on the interfaces.
+Define the simplicial set $\H$ by $\H_n = HG(n,n)$. And the face and degeneracy maps:
+\begin{align*}
+    &d_i^{\H} ((g, (U_1, \dots, U_n), (W_1, W_2, \dots, W_n), \L, A))\\
+    &\quad=\begin{cases}
+        (g, (U_1, \dots, U_i\cup U_{i+1}, \dots U_n), (W_1, \dots, W_i\cup W_{i+1}, \dots W_n), \L, A) & 0 < i < n\\
+        (g, (U_2, \dots, U_n), (W_1, W_2, \dots, W_n), \L, A) & i = 0\\
+        (g, (U_1, \dots, U_{n-1}), (W_1, \dots, W_{n-1}), \L, A) & i = n
+    \end{cases}\\
+    \hspace{5pt}
+    &s_i^{\H}((g, (U_1, \dots, U_n), (W_1, W_2, \dots, W_n), \L, A))\\
+    &=\quad (g, (U_1, \dots U_i, \varnothing, U_{i+1}, \dots, U_n), (W_1, \dots W_i, \varnothing, W_{i+1}, \dots, W_n), \L, A)
+\end{align*}
 \end{definition}
-
-$\H$ is a simplicial set precisely because we inherit the face and degeneracy maps from $N(\M)$:\\
 
 \begin{lemma}
     $\H$ is indeed a simplicial set.
 \end{lemma}
 
 \begin{proof}
-    $\pi_n$ is a simplicial morphism by commutation of the given diagrams. Since $N(\M)$ is a simplicial set by definition and the diagrams commute the simplicial identities also hold for $d^{\H}$ and $s^{\H}$. Therefore $\H$ is a simplicial set.
+    Let $\pi_n: \H_n \to N(\M)_n$ be the projection onto the interfaces given by $\pi_n((g, r, o, \L, A)) = ((r_i, o_i))_{i\in [n]}$.
+
+    \emph{Claim: } the following diagrams commute.
+    \[
+    \begin{tikzcd}
+    \H_n \arrow{r}{d_i^{\H}} \arrow{d}{\pi_n} & \H_{n-1} \arrow{d}{\pi_{n-1}} \\
+    N(\M)_n \arrow{r}{d_i^\M} & N(\M)_{n-1}
+    \end{tikzcd}
+    \quad
+    \begin{tikzcd}
+    \H_n \arrow{r}{s_j^{\H}} \arrow{d}{\pi_n} & \H_{n+1} \arrow{d}{\pi_{n+1}} \\
+    N(\M)_n \arrow{r}{s_j^\M} & N(\M)_{n+1}
+    \end{tikzcd}
+    \]
+    \begin{align*}
+        \intertext{\textbf{Face maps}}
+        \intertext{$i = 0$:}
+        &\pi_{n-1}(d_0^\mathcal{H}((g, (U_1, \ldots, U_n), (W_1, \ldots, W_n), \mathcal{L}, A))) \\
+        &= \pi_{n-1}((g, (U_2, \ldots, U_n), (W_2, \ldots, W_n), \mathcal{L}, A)) \\
+        &= ((U_2, W_2), \ldots, (U_n, W_n)) \\
+        &= d_0^\mathcal{M}((U_1, W_1), \ldots, (U_n, W_n)) \\
+        &= d_0^\mathcal{M}(\pi_n((g, (U_1, \ldots, U_n), (W_1, \ldots, W_n), \mathcal{L}, A))) \\
+        \intertext{$0 < i < n$:}
+        &\pi_{n-1}(d_i^\mathcal{H}((g, (U_1, \ldots, U_n), (W_1, \ldots, W_n), \mathcal{L}, A))) \\
+        &= \pi_{n-1}((g, (U_1, \ldots, U_i \cup U_{i+1}, \ldots, U_n), (W_1, \ldots, W_i \cup W_{i+1}, \ldots, W_n), \mathcal{L}, A)) \\
+        &= ((U_1, W_1), \ldots, (U_i \cup U_{i+1}, W_i \cup W_{i+1}), \ldots, (U_n, W_n)) \\
+        &= d_i^\mathcal{M}((U_1, W_1), \ldots, (U_n, W_n)) \\
+        &= d_i^\mathcal{M}(\pi_n((g, (U_1, \ldots, U_n), (W_1, \ldots, W_n), \mathcal{L}, A))) \\
+        \intertext{$i = n$:}
+        &\pi_{n-1}(d_n^\mathcal{H}((g, (U_1, \ldots, U_n), (W_1, \ldots, W_n), \mathcal{L}, A))) \\
+        &= \pi_{n-1}((g, (U_1, \ldots, U_{n-1}), (W_1, \ldots, W_{n-1}), \mathcal{L}, A)) \\
+        &= ((U_1, W_1), \ldots, (U_{n-1}, W_{n-1})) \\
+        &= d_n^\mathcal{M}((U_1, W_1), \ldots, (U_n, W_n)) \\
+        &= d_n^\mathcal{M}(\pi_n((g, (U_1, \ldots, U_n), (W_1, \ldots, W_n), \mathcal{L}, A)))\\
+        \intertext{\textbf{Degeneracy maps}}
+        &\pi_{n+1}(s_i^\mathcal{H}((g, (U_1, \ldots, U_n), (W_1, \ldots, W_n), \mathcal{L}, A))) \\
+        &= \pi_{n+1}((g, (U_1, \ldots, U_i, \varnothing, U_{i+1}, \ldots, U_n), (W_1, \ldots, W_i, \varnothing, W_{i+1}, \ldots, W_n), \mathcal{L}, A)) \\
+        &= ((U_1, W_1), \ldots, (U_i, W_i), (\varnothing, \varnothing), (U_{i+1}, W_{i+1}), \ldots, (U_n, W_n)) \\
+        &= s_i^\mathcal{M}((U_1, W_1), \ldots, (U_n, W_n)) \\
+        &= s_i^\mathcal{M}(\pi_n((g, (U_1, \ldots, U_n), (W_1, \ldots, W_n), \mathcal{L}, A)))
+    \end{align*}
+
+    Thus $\pi_n$ is a simplicial morphism. Therefore since $N(\M)$ is a simplicial set by definition the simplicial identities also hold for $d^{\H}$ and $s^{\H}$. Therefore $\H$ is a simplicial set.
 \end{proof}
 
 \subsection{Coalgebraic behaviour}

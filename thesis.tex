@@ -20,9 +20,20 @@
 \usepackage{amssymb}
 \usepackage{amsthm}
 
-\newtheorem{definition}{Definition}[section]
+\makeatletter
+\renewcommand{\th@definition}{%
+  \normalfont
+  \thm@preskip 15pt \relax
+  \thm@postskip 15pt \relax
+}
+\makeatother
+
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}{Lemma}[section]
+\newtheorem{corollary}{Corollary}[section]
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
 \newtheorem{example}{Example}[section]
 
 \usepackage{bbm}
@@ -134,12 +145,12 @@ In this section we give an introduction to the problem addressed in this thesis.
     \begin{enumerate}
         \item for all $x\in C$ there exists a morphism $\mu_x: F(x)\to G(x)$ called the component at $x$
         \item for all $x,y\in C$ and all morphisms $f: x\to y$ the following diagram commutes:
-        \[
+        \begin{equation}\label{eq:nat-trans}
             \begin{tikzcd}
-            F(x) \arrow{r}{F(f)} \arrow{d}{\mu_x} & F(y) \arrow{d}{\mu_y} \\
-            G(x) \arrow{r}{G(f)} & G(y)
+                F(x) \arrow{r}{F(f)} \arrow{d}{\mu_x} & F(y) \arrow{d}{\mu_y} \\
+                G(x) \arrow{r}{G(f)} & G(y)
             \end{tikzcd}
-        \]
+        \end{equation}
     \end{enumerate}
 \end{definition}
 
@@ -191,8 +202,127 @@ In this section we give an introduction to the problem addressed in this thesis.
     \end{aligned}
     \]
 
-    Given a collection of sets $S = S_0 \sqcup S_1 \sqcup \dots$ and functions $d_i: S_n\to S_{n-1}$, $s_i: S_n \to S_{n+1}$ satisfying the simplicial identities there is a unique simplicial set which has the same face and identity maps. This fact gives a second way to define simplicial sets, these two definitions are used interchangeably in this thesis.
+    The presheaf category of simplicial sets is called $\mathrm{sSet}$ and its natural transformations the \emph{simplicial morphisms}.
+    
+    Given a collection of sets $S = S_0 \sqcup S_1 \sqcup \dots$ and functions $d_i: S_n\to S_{n-1}$, $s_i: S_n \to S_{n+1}$ satisfying the simplicial identities there is a unique simplicial set which has the same face and degeneracy maps.
 \end{definition}
+
+\begin{lemma}
+    Let $X, Y\in \mathrm{sSet}$, a collection of morphisms $f_0: X_0\to Y_0, f_1: X_1\to Y_1, \dots$ is a simplicial morphism if and only if the following diagrams commute.
+    \[
+        \begin{tikzcd}
+        X_n \arrow{r}{d_i^X} \arrow{d}{f_n} & X_{n-1} \arrow{d}{f_{n-1}} \\
+        Y_n \arrow{r}{d_i^Y} & Y_{n-1}
+        \end{tikzcd}
+        \quad
+        \begin{tikzcd}
+        X \arrow{r}{s_j^X} \arrow{d}{f_n} & X_{n+1} \arrow{d}{f_{n+1}} \\
+        Y_n \arrow{r}{s_j^Y} & Y_{n+1}
+        \end{tikzcd}
+    \]
+\end{lemma}
+
+\begin{proof}
+    Given that $\delta_i$, $\sigma_i$ generate the morphisms in $\Delta$, diagram \ref{eq:nat-trans} automatically commutes for all $f$ if it does so for $\delta$ and $\sigma$.
+\end{proof}
+\subsection{Subobject Classifiers}
+\begin{definition}
+    Let $f, g$ be morphisms defined by
+    \begin{center}
+        \begin{tikzcd}
+              & Y \arrow[d,"g"] \\
+              X \arrow[r,swap,"f"]  & Z
+        \end{tikzcd}
+    \end{center}
+
+    Then a \emph{pullback} is an object $P$ together with morphisms $p_1, p_2$ such that 
+    \begin{center}
+        \begin{tikzcd}
+            P \arrow[d,"p_1"] \arrow[r,"p_2"] & Y \arrow[d,"g"] \\
+            X \arrow[r,swap,"f"]  & Z
+        \end{tikzcd}
+    \end{center}
+    commutes and is universal. The universal property means that for any other object $Q$, with morphisms $q_1: Q\to X$, $q_2: Q\to Y$ such that they commute just like the above, there needs to be a morphism $\beta: Q\to P$ such that this whole diagram commutes. 
+
+    \begin{center}
+        \begin{tikzcd}
+            Q \arrow[rrd,bend left,"q_2"]
+                \arrow[ddr,bend right,swap,"q_1"]
+                \arrow[dr,dashed,"\beta"] \\
+            & P \arrow[d,"p_1"] \arrow[r,"p_2"] & Y \arrow[d,"g"] \\
+            & X \arrow[r,swap,"f"]  & Z
+        \end{tikzcd}
+    \end{center}
+\end{definition}
+
+\begin{definition}
+    Let $C$ be a category with a terminal object $*$ and finite limits. A \emph{subobject classifier} $\Omega$ is an object in $C$ such that there exists a morphism $\top: * \to \Omega$ which has the property that for all objects $A, X$ and monomorphisms $f: A\to X$ there exists a unique morphism $\chi_A: X\to \Omega$ that makes the diagram commute and be a pullback
+    \begin{center}
+        \begin{tikzcd}
+            A \arrow[d,"f"] \arrow[r,""] & * \arrow[d,"\top"] \\
+            X \arrow[r,"\chi_A"] & \Omega
+        \end{tikzcd}
+    \end{center}
+\end{definition}
+
+\begin{example}
+    In the category $\mathrm{Set}$ where objects are sets and morphisms are functions, the subobject classifier is $\Omega = \{0,1\}$ and if $f = \id$ then $\chi_A$ is the characteristic map of the subset $A\subseteq X$.
+\end{example}
+
+\begin{lemma}[{\cite[Lemma.~1.6.5]{Elephant}}]\label{lem:exist-sub_class}
+    For any small category $C$, the functor category $[C, \mathrm{Set}]$ has a subobject classifier.
+\end{lemma}
+
+\begin{corollary}
+    $\mathrm{sSet}$ has a subobject classifier $\Omega$.
+\end{corollary}
+
+\begin{proof}
+    Given a category $C$ the presheaf category is the same as the functor category $[C^{op}, \mathrm{Set}]$. $\Delta$ is a small category (we won't go into detail in this detail what constitutes as a small category), and therefore so is its dual. From \ref{lem:exist-sub_class} we find that $\mathrm{sSet} = [\Delta^{op}, \mathrm{Set}]$ has a subobject classifier $\Omega$.
+\end{proof}
+
+\subsection{Coalgebras}
+In this thesis we primarily work with $F$-coalgebras, which we will introduce next, these are a special type of coalgebra which fits our usecase very well. A general definition therefore is not necessary as the definition of $F$-coalgebras is self-contained.
+
+\begin{definition}
+    Given a category $C$ and an endofunctor $F: C \to C$. An $F$-coalgebra $(A,\alpha)$ is an object $A\in C$ called the carrier and a morphism $\alpha: A\to FA$.
+\end{definition}
+
+\begin{example}[Labelled transition systems]
+    A very illustrative example are labelled transition systems. Here we have as carrier a state space $X$, and a set of actions (or characters in the context of DFA) $A$.
+
+    Take as endofunctor 
+    \[
+        FX = \P(A\times X)
+    \]
+
+    Then given a state $x\in X$ $\alpha(x) = \{(a_1, x_1),(a_2, x_2), \dots\}$ denotes possible transitions to states $x_1, x_2, \dots$ with corresponding outputs of $a_1, a_2, \dots$.
+    \begin{figure}[h]
+        \centering
+        \begin{tikzpicture}[scale=0.17]
+            \tikzstyle{every node}+=[inner sep=0pt]
+            \draw [black] (17.2,-13.3) circle (3);
+            \draw (17.2,-13.3) node {$1$};
+            \draw [black] (17.2,-35.1) circle (3);
+            \draw (17.2,-35.1) node {$2$};
+            \draw [black] (35.4,-23.4) circle (3);
+            \draw (35.4,-23.4) node {$3$};
+            \draw [black] (19.82,-14.76) -- (32.78,-21.94);
+            \fill [black] (32.78,-21.94) -- (32.32,-21.12) -- (31.83,-21.99);
+            \draw (25.36,-18.85) node [below] {$a$};
+            \draw [black] (17.2,-16.3) -- (17.2,-32.1);
+            \fill [black] (17.2,-32.1) -- (17.7,-31.3) -- (16.7,-31.3);
+            \draw (16.7,-24.2) node [left] {$b$};
+            \draw [black] (19.72,-33.48) -- (32.88,-25.02);
+            \fill [black] (32.88,-25.02) -- (31.93,-25.03) -- (32.47,-25.88);
+            \draw (27.24,-29.75) node [below] {$a$};
+        \end{tikzpicture}
+        \label{ex-lab_tran_sys}
+        \caption{A labelled transitions system}
+    \end{figure}
+
+    In figure \ref{ex-lab_tran_sys} a labelled transition system is given where $\alpha(1) = \{(a,3),(b,2)\}$, $\alpha(2) = \{(a,3)\}$, $\alpha(3) = \varnothing$
+\end{example}
 
 \newpage
 \section{Definitions}
@@ -201,7 +331,7 @@ In this section we give an introduction to the problem addressed in this thesis.
     A directed \emph{hypergraph} $(V,H)$ is a finite set of vertices $V$ and a set of \emph{hyperarcs} $H\subseteq \P(V)^2$.
 \end{definition}
 
-\emph{Notation:} A directed hypergraph containing no cycles is a Directed Acyclic Hypergraph (DAH).\\
+\emph{Notation:} A directed hypergraph containing no cycles is a Directed Acyclic Hypergraph (DAH).
 
 \begin{definition}
 A \emph{ranked term hypergraph} $(g, r, o, \L, A)$ consists of:
@@ -213,7 +343,7 @@ A \emph{ranked term hypergraph} $(g, r, o, \L, A)$ consists of:
 \end{definition}
 \emph{Notation:} In this thesis we refer to ranked term hypergraphs as just hypergraphs as we will only be working with this kind. $HG(n,m)$ is the set of ranked term  hypergraphs of rank $(n,m)$
 
-A ranked hypergraph with $|r| = |o|$ is called symmetric.\\
+A ranked hypergraph with $|r| = |o|$ is called symmetric.
 
 \begin{example}
     In figure \ref{fig:DAH-example} a ranked hypergraph is drawn. Left is the root interface, of rank 3, on the right is the output interface of rank 2. 
@@ -442,8 +572,7 @@ Define the simplicial set $\H$ by $\H_n = HG(n,n)$. And the face and degeneracy 
     \end{tikzcd}
     \]
     \begin{align*}
-        \intertext{\textbf{Face maps}}
-        \intertext{$i = 0$:}
+        \intertext{\textbf{Face maps}\\$i = 0$:}
         &\pi_{n-1}(d_0^\mathcal{H}((g, (U_1, \ldots, U_n), (W_1, \ldots, W_n), \mathcal{L}, A))) \\
         &= \pi_{n-1}((g, (U_2, \ldots, U_n), (W_2, \ldots, W_n), \mathcal{L}, A)) \\
         &= ((U_2, W_2), \ldots, (U_n, W_n)) \\
@@ -477,16 +606,14 @@ To add behaviour to the hypergraph simplicial set we define pointed F-coalgebras
 
 \begin{definition}
     \[
-        F: sSet \to sSet, \quad FX = \B \times \finP(X \sqcup \uparrow X)^{\H}
+        F: sSet \to sSet, \quad FX = \Omega \times \finP(X \sqcup \uparrow X)^{\H}
     \]
-    
-    Here each state therefore outputs a boolean in $\B$ indicating if it's an accepting state, and transition maps $\H \to \finP(X \sqcup \uparrow X)$. Here the $\finP$ is the finite powerset on simplicial sets $\finP: sSet \to sSet$ applied to $X\sqcup \uparrow X$.
     
     Let $\Delta$ be the simplex category, we define $(-)^{\rhd}$ to be the functor which adds a new maximal element to a powerset. Precomposing this with the presheaf $X$ gives $\uparrow X = X\otimes (-)^{\rhd}$. Thus from this construction, given an $x\in X_n$ we can only transition to elements in $X_m$ where $m\geq n$.
     
     We also define $F(f) = \B\times\finP(f \sqcup \uparrow f)^{\H}$, which just applies $f$ to all transitioned-to elements.
 \end{definition}
-\vspace{2em}
+
 \begin{definition}
     A pointed $F$-coalgebra over a functor $F$ is a triple $(X, \alpha: X\to FX, x_0)$ where $X$ is the \emph{carrier set} and $x_0$ is the \emph{base} or in our case an \emph{initial state}.
 \end{definition}
@@ -564,7 +691,7 @@ This is a tree structure with $x_0$ as root, $x_{01}, x_{02}, \dots$ as children
 \begin{definition}
     Given coalgebras $(X, \alpha: X\to FX, x_0)$, $(Y, \beta: Y\to FY, y_0)$, a function $f: X\to Y$ is a homomorphism if and only if
     \begin{align*}
-        F(f)\otimes \alpha = \beta \otimes f\\
+        F(f)\circ \alpha = \beta \circ f\\
         f(x_0) = y_0
     \end{align*}
 \end{definition}

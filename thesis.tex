@@ -50,6 +50,7 @@
 \usepackage{parskip}
 \usepackage{mathtools}
 \usepackage{mathdots}
+\usepackage{stmaryrd}
 %\usepackage[hidelinks]{hyperref}
 \newcommand{\defeq}{\vcentcolon=}
 \newcommand{\eqdef}{=\vcentcolon}
@@ -86,6 +87,7 @@
 \renewcommand{\H}{\mathcal{H}}
 \newcommand{\finP}{\mathcal{P}_{\omega}}
 \newcommand{\Set}{\mathbf{Set}}
+\newcommand{\seq}{;}
 
 \begin{document}
 \include{titlepage.tex}
@@ -345,7 +347,7 @@ In this thesis we primarily work with $F$-coalgebras, which we will introduce ne
 A \emph{ranked term hypergraph} $(g, r, o, \L, A)$ consists of:
 \begin{itemize}
 \item A DAH $g$,
-\item Finite sequences $r = (r_i)_i$, $o = (o_i)_i$ $r_i, o_i\in \P(V)$ denoting the root and variable interfaces. $o_i$ contains only maximal vertices. We refer to $(|r|, |o|)$ as the \emph{rank} of this graph.
+\item Finite sequences $r = (r_i)_{i\leq |r|}$, $o = (o_i)_{i\leq |o|}$ $r_i, o_i\in \P(V)$ denoting the root and variable interfaces. $o_i$ contains only maximal vertices. We refer to $(|r|, |o|)$ as the \emph{rank} of this graph.
 \item An action set $A$ and a hyperarc labelling function $\L: H\to A$
 \end{itemize}
 \end{definition}
@@ -401,16 +403,12 @@ A ranked hypergraph with $|r| = |o|$ is called symmetric.
 \begin{definition}\label{def_seq_comp}
 Let $G, F$ be hypergraphs such that $|o^G| = |r^F|$, their composition is defined as follows:
 \begin{align}
-    G\otimes F = (g', r', o^F, \L^G\sqcup \L^F, A^G\cup A^F)
+    G\seq F = (g', r', o^F, \L^G\sqcup \L^F, A^G\cup A^F)
 \end{align}
 
 We obtain $g' = (V,H)$ by the following procedure:
 
 Define 
-% \begin{enumerate}
-%     \item $g' = (V,H) \defeq g^G \sqcup g^F$
-%     \item For each $o^G_i\in o^G$, $v\in o^G_i$, if v is minimal and/or $r^F_i\neq\varnothing$:\\ $V\defeq V\setminus \{v\}$ and for each $(U, U')\in H$ with $v\in U'$, set $U' \defeq (U' \cup r^F_i) \setminus \{v\}$\\
-% \end{enumerate}
 
 \begin{align*}
     V = (V^G + V^F) \setminus \bigcup_{i\leq |o^G|}o^G_i
@@ -447,7 +445,7 @@ This composition allows for a left identity $id_n$ namely $id_n = ((\{1,2,\dots,
 \begin{lemma}\label{lem:psieq}
     Let $G,K,F$ be a DAH and $U\subseteq V^G$ a set of vertices. It holds that:
     \[
-        \Psi_{r^F, o^K}\circ \Psi_{r^K, o^G}(U) = \Psi_{r^F\otimes r^K, o^G}(U)
+        \Psi_{r^F, o^K}\circ \Psi_{r^K, o^G}(U) = \Psi_{r^F\seq r^K, o^G}(U)
     \]
 \end{lemma}
 
@@ -465,18 +463,18 @@ This composition allows for a left identity $id_n$ namely $id_n = ((\{1,2,\dots,
             \{v\} & v\notin \cup_i o_i^G\\
             \bigcup_{\substack{i \leq |r^K| \\ v \in o^G_i}} \Psi_{r^F, o^K} (r^K_i) & \text{else}\\
         \end{cases}\\
-        \intertext{By definition $r^{K\otimes F}_i \defeq \Psi_{r^F, o^K} (r^K_i)$ and hence}
+        \intertext{By definition $r^{K\seq F}_i \defeq \Psi_{r^F, o^K} (r^K_i)$ and hence}
         &=
         \begin{cases}
             \{v\} & v\notin \cup_i o_i^G\\
-            \bigcup_{\substack{i\leq  |r^{K\otimes F}| \\ v \in o^G_i}} r^{K\otimes F}_i & \text{else}\\
+            \bigcup_{\substack{i\leq  |r^{K\seq F}| \\ v \in o^G_i}} r^{K\seq F}_i & \text{else}\\
         \end{cases}\\
-        &= \psi_{r^F\otimes r^K, o^G}(v)
+        &= \psi_{r^F\seq r^K, o^G}(v)
     \end{align*}
 
     Taking unions of singletons then yields:
     \[
-        \Psi_{r^F, o^K}\circ \Psi_{r^K, o^G}(U) = \Psi_{r^F\otimes r^K, o^G}(U)
+        \Psi_{r^F, o^K}\circ \Psi_{r^K, o^G}(U) = \Psi_{r^F\seq r^K, o^G}(U)
     \]
 \end{proof}
 
@@ -485,26 +483,26 @@ Which lets us prove the following theorem:
 \begin{theorem}\label{thm:assoc}
 The sequential composition of ranked hypergraphs has the following properties:
     \begin{enumerate}
-        \item $\otimes$ is associative
-        \item $id_n \otimes G = G$
+        \item $\seq$ is associative
+        \item $id_n \seq G = G$
     \end{enumerate}
 \end{theorem}
 
 \begin{proof}
-    Let $G,K,F$ be ranked hypergraphs. It is clear from the definition that $(G \otimes K) \otimes F = G \otimes (K \otimes F)$ if and only if their graphs and root interfaces are equal.
+    Let $G,K,F$ be ranked hypergraphs. It is clear from the definition that $(G \seq K) \seq F = G \seq (K \seq F)$ if and only if their graphs and root interfaces are equal.
          
-    Let $r$, $r'$ be the root interfaces for $(G \otimes K) \otimes F$, $G \otimes (K \otimes F)$ respectively.  
+    Let $r$, $r'$ be the root interfaces for $(G \seq K) \seq F$, $G \seq (K \seq F)$ respectively.  
     We expand the definition and use lemma \ref{lem:psieq} to show that $r = r'$. Let $i\leq |r^G|$, we get:
     
     \begin{align*}
-        r_i = \Psi_{r^F, o^k}(r^{G\otimes K}_i) = \Psi_{r^F, o^k}(\Psi_{r^K, o^G}(r^G_i)) = \Psi_{r^{K\otimes F}, o^G}(r_i) = r'_i\\
+        r_i = \Psi_{r^F, o^k}(r^{G\seq K}_i) = \Psi_{r^F, o^k}(\Psi_{r^K, o^G}(r^G_i)) = \Psi_{r^{K\seq F}, o^G}(r_i) = r'_i\\
     \end{align*}
 
-    Let $g = (V, H)$, $g' = (V', H')$ be the graphs for $(G \otimes K) \otimes F$, $G \otimes (K \otimes F)$ respectively.
+    Let $g = (V, H)$, $g' = (V', H')$ be the graphs for $(G \seq K) \seq F$, $G \seq (K \seq F)$ respectively.
 
     We expand the definition:
     \begin{gather*}
-        V = (V^{G\otimes K} + V^F) \setminus \bigcup_{i\leq |o^K|}o_i^K\\
+        V = (V^{G\seq K} + V^F) \setminus \bigcup_{i\leq |o^K|}o_i^K\\
         = (((V^G + V^K) \setminus \bigcup_{i\leq|o^G|}o^G_i) + V^F) \setminus \bigcup_{i\leq |o^K|}o_i^K
         \intertext{From disjointness the inclusion of $V^G$, $V^K$, and $V^F$ into their coproduct we get}
         = (V^G + ((V^K + V^F) \setminus \bigcup_{i\leq|o^K|}o^K_i)) \setminus \bigcup_{i\leq|o^G|}o_i^G = V'
@@ -512,13 +510,13 @@ The sequential composition of ranked hypergraphs has the following properties:
 
     Lastly for the arcs:
     \begin{align*}
-        H &= \left\{ \left(U, \Psi_{r^F, o^K}(U')\right) : (U, U') \in H^{G\otimes K} \right\} \cup H^F\\
+        H &= \left\{ \left(U, \Psi_{r^F, o^K}(U')\right) : (U, U') \in H^{G\seq K} \right\} \cup H^F\\
         &= \left\{ \left(U, \Psi_{r^F, o^K}(\Psi_{r^K, o^G}(U'))\right) : (U, U') \in H^G \right\}
         \cup \left\{ \left(U, \Psi_{r^F, o^K}(U')\right) : (U, U') \in H^K \right\} \cup H^F\\
         \intertext{By lemma \ref{lem:psieq} we have}
-        &= \left\{ \left(U, \Psi_{r^{F\otimes K}, o^G}(U')\right) : (U, U') \in H^G \right\}
+        &= \left\{ \left(U, \Psi_{r^{F\seq K}, o^G}(U')\right) : (U, U') \in H^G \right\}
         \cup \left\{ \left(U, \Psi_{r^F, o^K}(U')\right) : (U, U') \in H^K \right\} \cup H^F\\
-        &= \left\{ \left(U, \Psi_{r^{K \otimes F}, o^G}(U')\right) : (U, U') \in H^G \right\} \cup H^{K \otimes F}\\
+        &= \left\{ \left(U, \Psi_{r^{K \seq F}, o^G}(U')\right) : (U, U') \in H^G \right\} \cup H^{K \seq F}\\
         &= H'
     \end{align*}
 \end{proof}
@@ -528,7 +526,7 @@ The sequential composition of ranked hypergraphs has the following properties:
 \end{theorem}
 
 \begin{proof}
-    We prove this by showing that for any hypergraph $G$ of depth $\geq 2$ there exist hypergraphs $G_{start}\in HG$, $G_{end}\in HG_0$ such that $G = K\otimes F$.
+    We prove this by showing that for any hypergraph $G$ of depth $\geq 2$ there exist hypergraphs $G_{start}\in HG$, $G_{end}\in HG_0$ such that $G = K\seq F$.
 
     First take $r^{start} = r$, $o^{end} = o$, $\L_{start} = \L_{end} = \L$, $A_{start} = A_{end} = A$.
 
@@ -550,16 +548,14 @@ The sequential composition of ranked hypergraphs has the following properties:
 
     Note that for all $(U,U')\in H$ there exists a $k\in \N$ such that for all $v\in U'$ we have $d(v) = k$.
 
-    Finally for the interfaces, take $r_{end} = o_{start}$ to be any enumeration of all elements of $V_{start}\cap V_{end}$.
-
-    We work out $G_{start};G_{end}$
+    Finally for the interfaces, take $r_{end} = o_{start}$ to be any enumeration of all elements of $V_{start}\cap V_{end}$.    
 \end{proof}
 
 \begin{definition}
     Let $G,F$ be hypergraphs such that $|o^G| \leq |r^F|$ we extend the notion of the sequential composition given by \ref{def_seq_comp} to asymmetric graph compositions. Write 
 
     \begin{align*}
-        G\otimes^+ F = (g', r', o^F, \L^G\sqcup \L^F, A^G\cup A^F)
+        G\seq^+ F = (g', r', o^F, \L^G\sqcup \L^F, A^G\cup A^F)
     \end{align*}
 
     for the extended composition.
@@ -574,7 +570,7 @@ The sequential composition of ranked hypergraphs has the following properties:
         H \defeq \left\{ \left(U, \Psi_{r^F, o^G}(U')\right) : (U, U') \in H^G \right\} \cup H^F
     \]
 
-    And do the same as $\otimes$ for the interfaces except for the excess ones which we just copy:
+    And do the same as $\seq$ for the interfaces except for the excess ones which we just copy:
     \[
         r'_i = 
         \begin{cases}
@@ -586,7 +582,7 @@ The sequential composition of ranked hypergraphs has the following properties:
 
 By separation of cases we trivially extend theorem \ref{thm:assoc} to the following result:
 \begin{corollary}
-    $\otimes^+$ is associative
+    $\seq^+$ is associative
 \end{corollary}
 
 \subsection{Simplicial set over ranked term graphs}
@@ -683,7 +679,7 @@ To add behaviour to the hypergraph simplicial set we define pointed F-coalgebras
         F: sSet \to sSet, \quad FX = \Omega \times \finP(X \sqcup \uparrow X)^{\H}
     \]
     
-    Let $\Delta$ be the simplex category, we define $(-)^{\rhd}$ to be the functor which adds a new maximal element to a powerset. Precomposing this with the presheaf $X$ gives $\uparrow X = X\otimes (-)^{\rhd}$. Thus from this construction, given an $x\in X_n$ we can only transition to elements in $X_m$ where $m\geq n$.
+    Let $\Delta$ be the simplex category, we define $(-)^{\rhd}$ to be the functor which adds a new maximal element to a powerset. Precomposing this with the presheaf $X$ gives $\uparrow X = X\seq (-)^{\rhd}$. Thus from this construction, given an $x\in X_n$ we can only transition to elements in $X_m$ where $m\geq n$.
     
     We also define $F(f) = \B\times\finP(f \sqcup \uparrow f)^{\H}$, which just applies $f$ to all transitioned-to elements.
 \end{definition}

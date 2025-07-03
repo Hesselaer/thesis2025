@@ -546,9 +546,13 @@ The sequential composition of ranked hypergraphs has the following properties:
         &H_{start} = \{(U,U')\in H : d(v) < n\quad\forall v\in U'\}
     \end{align*}
 
-    Note that for all $(U,U')\in H$ there exists a $k\in \N$ such that for all $v\in U'$ we have $d(v) = k$.
+    Note that for all $(U,U')\in H$ there exists a $k\in \N$ such that for all $v\in U'$ we have $d(v) = k$, therefore $H_{start}$, $H_{end}$ partition $H$.
 
-    Finally for the interfaces, take $r_{end} = o_{start}$ to be any enumeration of all elements of $V_{start}\cap V_{end}$.    
+    Finally for the interfaces, take $r^{end} = o^{start}$ to be any enumeration of all elements of $V_{start}\cap V_{end}$.
+
+    By definition of $\psi_{r^{end}, o^{start}}$ and our interfaces we get $\psi_{r^{end}, o^{start}}(v) = \{v\}$ $\forall v\in V_{start}$ and thus $\Psi_{r^{end}, o^{start}} = id$.
+
+    Thus $r' = r^{start} = r$, $H' = H_{start}\cup H_{end} = H$, $V = $ \textcolor{red}{this breaks because in the statement about $\psi$ we actually have that if $v\in V_{start}\cap V_{end}$ then we map one coproduct inclusion (the one from $V_{start}$) into $v\hookrightarrow V_{start} + V_{end}$ to the other (from $V_{end}$) and then remove the one from $v_{start}$ because it's in an output interface leaving us with just one of the copies. How to do this neatly?}
 \end{proof}
 
 \begin{definition}

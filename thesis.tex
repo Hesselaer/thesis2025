@@ -88,6 +88,7 @@
 \newcommand{\finP}{\mathcal{P}_{\omega}}
 \newcommand{\Set}{\mathbf{Set}}
 \newcommand{\seq}{;}
+\newcommand{\pred}{\text{pred}}
 
 \begin{document}
 \include{titlepage.tex}
@@ -108,38 +109,6 @@ This thesis introduces a construction of automata for concurrent languages. This
 \section{Introduction} \label{introduction}
 
 In this section we give an introduction to the problem addressed in this thesis.
-
-% \begin{figure}
-%     \centering
-%     \begin{tikzpicture}
-% 		\node [style={gra_point}, label={above:1}] (0) at (-1, 1.5) {};
-% 		\node [style={gra_point}, label={above:2}] (1) at (-1, 0) {};
-% 		\node [style={gra_point}, label={above:4}] (3) at (1, 1.5) {};
-% 		\node [style={int_point}] (5) at (-3, 1.5) {};
-% 		\node [style={int_point}] (6) at (-3, 0) {};
-% 		\node [style={int_point}] (7) at (-3, -1.75) {};
-% 		\node [style={int_point}] (8) at (3.75, 1.25) {};
-% 		\node [style={int_point}] (9) at (3.75, -1.25) {};
-% 		\node [style={gra_point}, label={above:6}] (10) at (1, -0.75) {};
-% 		\node [style={gra_point}, label={above:5}] (11) at (1, 0.5) {};
-% 		\node [label={above:a}] (12) at (0, 0) {};
-% 		\node [label={above:b}] (13) at (0, 1.5) {};
-% 		\node [style={gra_point}, label={above:3}] (14) at (0, -1.75) {};
-% 		\draw [style={int_edge}] (5) to (0);
-% 		\draw (1) to (12.center);
-% 		\draw [style={int_edge}] (7) to (14);
-% 		\draw [style={int_edge}] (6) to (1);
-% 		\draw [style={int_edge}] (9) to (14);
-% 		\draw [style={int_edge}] (9) to (10);
-% 		\draw [style={int_edge}] (8) to (3);
-% 		\draw [style={gra_edge}] (0) to (3);
-% 		\draw [style={gra_edge}] (12.center) to (11);
-% 		\draw [style={gra_edge}] (12.center) to (10);
-%     \end{tikzpicture}
-%     \caption{A Directed Acyclic (ranked) Hypergraph}
-%     \label{fig:intro-DAH}
-% \end{figure}
-
 
 \subsection{The problem}
 
@@ -288,18 +257,18 @@ In this section we give an introduction to the problem addressed in this thesis.
 \end{corollary}
 
 \begin{proof}
-    Given a category $C$ the presheaf category is the same as the functor category $[C^{op}, \mathrm{Set}]$. $\Delta$ is a small category (we won't go into detail in this detail what constitutes as a small category), and therefore so is its dual. From \ref{lem:exist-sub_class} we find that $\mathrm{sSet} = [\Delta^{op}, \mathrm{Set}]$ has a subobject classifier $\Omega$.
+    Given a category $C$ the presheaf category is the same as the functor category $[C^{op}, \mathrm{Set}]$. $\Delta$ is a small category (in this thesis we won't go into detail what exactly constitutes a small category), and therefore so is its dual. From \ref{lem:exist-sub_class} we find that $\mathrm{sSet} = [\Delta^{op}, \mathrm{Set}]$ has a subobject classifier $\Omega$.
 \end{proof}
 
 \subsection{Coalgebras}
 In this thesis we primarily work with $F$-coalgebras, which we will introduce next, these are a special type of coalgebra which fits our usecase very well. A general definition therefore is not necessary as the definition of $F$-coalgebras is self-contained.
 
 \begin{definition}
-    Given a category $C$ and an endofunctor $F: C \to C$. An $F$-coalgebra $(A,\alpha)$ is an object $A\in C$ called the carrier and a morphism $\alpha: A\to FA$.
+    Given a category $C$ and an endofunctor $F: C \to C$. An $F$-coalgebra $(A,\alpha)$ consists of an object $A\in C$ called the carrier and a morphism $\alpha: A\to FA$.
 \end{definition}
 
 \begin{example}[Labelled transition systems]
-    A very illustrative example are labelled transition systems. Here we have as carrier a state space $X$, and a set of actions (or characters in the context of DFA) $A$.
+    Take as carrier a state space $X$, and a set of actions (or characters in the context of DFA) $A$.
 
     Take as endofunctor 
     \[
@@ -335,10 +304,9 @@ In this thesis we primarily work with $F$-coalgebras, which we will introduce ne
 \end{example}
 
 \newpage
-\section{Definitions}
-\subsection{Ranked Hypergraphs}
+\section{Ranked Hypergraphs}
 \begin{definition}
-    A directed \emph{hypergraph} $(V,H)$ is a finite set of vertices $V$ and a set of \emph{hyperarcs} $H\subseteq \P(V)^2$.
+    A directed \emph{hypergraph} $(V,H)$ is a finite set of vertices $V$ and a set of \emph{hyperarcs} $H\subseteq V\times\P(V)$.
 \end{definition}
 
 \emph{Notation:} A directed hypergraph containing no cycles is a Directed Acyclic Hypergraph (DAH).
@@ -361,7 +329,7 @@ A ranked hypergraph with $|r| = |o|$ is called symmetric.
     The full definition of this graph is as follows
     \begin{itemize}
         \item $V = \{1,2,3,4,5,6\}$
-        \item $H = \{(\{1\}, \{4\}), (\{2\}, \{5,6\})\}$
+        \item $H = \{(1, \{4\}), (2, \{5,6\})\}$
         \item $r = (\{1\}, \{2\}, \{3\})$, $o = (\{4\}, \{3,6\})$
         \item $A = \{a,b\}$, $\L((\{1\}, \{4\})) = b$, $\L((\{2\}, \{5,6\})) = a$
     \end{itemize}
@@ -396,8 +364,22 @@ A ranked hypergraph with $|r| = |o|$ is called symmetric.
     \caption{A Directed Acyclic Hypergraph}
     \label{fig:DAH-example}
 \end{figure}
-\end{example}
+\end{example} % ranked hypergraph
 
+\begin{definition}
+Let $G$ and $H$ be ranked hypergraphs,
+
+An \emph{isomorphism} between $G$ and $F$ is a bijection
+\[
+f : V^G \to V^F
+\]
+such that
+\[
+(u, U') \in H^G 
+\iff
+(f(u), f[U']) \in H^F,
+\]
+\end{definition} % ranked hypergraph isomorphism
 
 \subsection{Composition of ranked hypergraphs}
 \begin{definition}\label{def_seq_comp}
@@ -411,7 +393,7 @@ We obtain $g' = (V,H)$ by the following procedure:
 Define 
 
 \begin{align*}
-    V = (V^G + V^F) \setminus \bigcup_{i\leq |o^G|}o^G_i
+    V = (V^G + V^F) \setminus i_G[\bigcup_{i\leq |o^G|}o^G_i]
 \end{align*}
 
 To get the hyperarcs we keep all elements but replace a vertex if it exists in an output, to do this neatly we define a pair of functions:
@@ -419,8 +401,8 @@ To get the hyperarcs we keep all elements but replace a vertex if it exists in a
 \[
 \psi_{r^F, o^G}(v) := 
 \begin{cases}
-\displaystyle\bigcup_{\substack{i\leq |o^G| \\ v \in o^G_i}} r^F_i & \text{if } \exists i \leq |o^G| \text{ such that } v \in o^G_i \\
-\{v\} & \text{otherwise}
+    i_F[\displaystyle\bigcup_{\substack{i\leq |o^G| \\ v \in o^G_i}} r^F_i] & \text{if } \exists i \leq |o^G| \text{ such that } v \in o^G_i \\
+    \{i_G(v)\} & \text{otherwise}
 \end{cases}
 \]
 
@@ -429,7 +411,7 @@ To get the hyperarcs we keep all elements but replace a vertex if it exists in a
 \]
 
 \[
-H := \left\{ \left(U, \Psi_{r^F, o^G}(U')\right) : (U, U') \in H^G \right\} \cup H^F
+H := \left\{ \left(i_G(u), \Psi_{r^F, o^G}(U')\right) : (u, U') \in H^G \right\} \cup i_F[H^F]
 \]
 
 So for all $i$, in each arc $v$ that ends in a vertex in $o_i^G$, we replace that vertex in the arc with $r_i^F$. 
@@ -438,9 +420,9 @@ And we obtain $r'$ by taking over the original $r^G$ and `connecting through' fo
 \begin{align*}
     r'_i = \Psi_{r^F, o^G}(r^G_i)
 \end{align*}
-\end{definition}
+\end{definition} % seq composition
 
-This composition allows for a left identity $id_n$ namely $id_n = ((\{1,2,\dots,n\}, \varnothing), (\{i\})_{i\in n}, (\{i\})_{i\in n})$.\vspace{5pt}
+This composition allows for a left identity $id_n$ namely $id_n = ((\{1,2,\dots,n\}, \varnothing), (\{i\})_{i\in n}, (\{i\})_{i\in n})$.
 
 \begin{lemma}\label{lem:psieq}
     Let $G,K,F$ be a DAH and $U\subseteq V^G$ a set of vertices. It holds that:
@@ -484,9 +466,9 @@ Which lets us prove the following theorem:
 The sequential composition of ranked hypergraphs has the following properties:
     \begin{enumerate}
         \item $\seq$ is associative
-        \item $id_n \seq G = G$
+        \item $id_n \seq G \cong G$
     \end{enumerate}
-\end{theorem}
+\end{theorem} % associativity
 
 \begin{proof}
     Let $G,K,F$ be ranked hypergraphs. It is clear from the definition that $(G \seq K) \seq F = G \seq (K \seq F)$ if and only if their graphs and root interfaces are equal.
@@ -510,54 +492,107 @@ The sequential composition of ranked hypergraphs has the following properties:
 
     Lastly for the arcs:
     \begin{align*}
-        H &= \left\{ \left(U, \Psi_{r^F, o^K}(U')\right) : (U, U') \in H^{G\seq K} \right\} \cup H^F\\
-        &= \left\{ \left(U, \Psi_{r^F, o^K}(\Psi_{r^K, o^G}(U'))\right) : (U, U') \in H^G \right\}
-        \cup \left\{ \left(U, \Psi_{r^F, o^K}(U')\right) : (U, U') \in H^K \right\} \cup H^F\\
+        H &= \left\{ \left(u, \Psi_{r^F, o^K}(U')\right) : (u, U') \in H^{G\seq K} \right\} \cup H^F\\
+        &= \left\{ \left(u, \Psi_{r^F, o^K}(\Psi_{r^K, o^G}(U'))\right) : (u, U') \in H^G \right\}
+        \cup \left\{ \left(u, \Psi_{r^F, o^K}(U')\right) : (u, U') \in H^K \right\} \cup H^F\\
         \intertext{By lemma \ref{lem:psieq} we have}
-        &= \left\{ \left(U, \Psi_{r^{F\seq K}, o^G}(U')\right) : (U, U') \in H^G \right\}
-        \cup \left\{ \left(U, \Psi_{r^F, o^K}(U')\right) : (U, U') \in H^K \right\} \cup H^F\\
-        &= \left\{ \left(U, \Psi_{r^{K \seq F}, o^G}(U')\right) : (U, U') \in H^G \right\} \cup H^{K \seq F}\\
+        &= \left\{ \left(u, \Psi_{r^{F\seq K}, o^G}(U')\right) : (u, U') \in H^G \right\}
+        \cup \left\{ \left(u, \Psi_{r^F, o^K}(U')\right) : (u, U') \in H^K \right\} \cup H^F\\
+        &= \left\{ \left(u, \Psi_{r^{K \seq F}, o^G}(U')\right) : (u, U') \in H^G \right\} \cup H^{K \seq F}\\
         &= H'
     \end{align*}
 \end{proof}
 
+\subsection{Generating hypergraphs}
+
+\begin{definition}
+    First define the notion of predecessor of a vertex as:
+    \begin{align*}
+        \pred(v) = \{w\in V : \exists(w, U') \text( s.t. ) v\in U'\}
+    \end{align*}
+
+    Then we can define the depth of a vertex recursively
+    \begin{align*}
+        d: V \to \N, \quad d(v) = 
+        \begin{cases}
+            \max\{d(w) + 1 : w\in \pred(v)\} & \pred(v) \neq \varnothing\\
+            0 & else 
+        \end{cases}
+    \end{align*}
+
+    which extends to a notion of depth for an entire ranked hypergraph: \begin{align*}
+        D(G) = \max\{d(v) : v\in V^G\}
+    \end{align*}
+\end{definition} % depth of hypergraph
+
 \begin{theorem}
-    The set of ranked hypergraphs is generated by the subset of hypergraphs $HG_0$ with depth of at most 1. 
-\end{theorem}
+    The set of ranked hypergraphs is generated by the subset $$HG_1 \defeq \{G\in HG : D(G) \leq 1\}$$
+\end{theorem} % generator
 
 \begin{proof}
-    We prove this by showing that for any hypergraph $G$ of depth $\geq 2$ there exist hypergraphs $G_{start}\in HG$, $G_{end}\in HG_0$ such that $G = K\seq F$.
+    We prove this by showing that for any hypergraph $G$ of depth $n \geq 2$ there exist hypergraphs $G_{1}\in HG$ with $D(G_1) = n-1$, $G_{2}\in HG_1$ such that $G \cong K\seq F$.
 
-    First take $r^{start} = r$, $o^{end} = o$, $\L_{start} = \L_{end} = \L$, $A_{start} = A_{end} = A$.
+    First take $r^{1} = r$, $o^{2} = o$, $\L^{1} = \L^{2} = \L$, $A^{1} = A^{2} = A$.
 
-    Let $n$ be the depth of the graph, and denote by $d: V\to \N$ the depth of a vertex.
-
-    Pull apart the vertices into two sets, which only coincide at depth $n-1$:
+    Then let
     \begin{align*}
-        &V_{start} = \{v\in V : d(v) \neq n \}\\
-        &V_{end} = \{v\in V : d(v) \in \{n - 1, n\} \} \cup \bigcup_{i\leq |o|} o_i
+        &V^1 = \{v\in V : d(v) \leq n-1 \text{ or } \exists w\in \pred(v) \text{ s.t. } d(w) < n-1\}\\
+        &V^2 = \{v\in V : n-1 \leq d(v) \leq n\} \cup \bigcup_{i\leq |o^G|} o^G_i
     \end{align*}
 
-    this also adds dummy vertices to $G_{end}$ for vertices of depth $< n-1$ which are in some output interface.
-
-    Then let:
     \begin{align*}
-        &H_{end} = \{(U,U')\in H : d(v) = n\quad\forall v\in U'\}\\
-        &H_{start} = \{(U,U')\in H : d(v) < n\quad\forall v\in U'\}
+        &H^1 = \{(u,U')\in H : d(u) < n-1\}\\
+        &H^2 = \{(u, U')\in H : d(u) = n-1\}
     \end{align*}
 
-    Note that for all $(U,U')\in H$ there exists a $k\in \N$ such that for all $v\in U'$ we have $d(v) = k$, therefore $H_{start}$, $H_{end}$ partition $H$.
+    Note that for all $(u,U') \in H_1$ we have $u\in V^1\setminus V^2$ because its degree is $< n-1$ and it isn't maximal and therefore not part of $o$. Furthermore, note that $(H^1, H^2)$ partitions $H$.
 
-    Finally for the interfaces, take $r^{end} = o^{start}$ to be any enumeration of all elements of $V_{start}\cap V_{end}$.
+    Finally let $o^1 = r^2$ be any enumeration of $V^1\cap V^2$. 
 
-    By definition of $\psi_{r^{end}, o^{start}}$ and our interfaces we get $\psi_{r^{end}, o^{start}}(v) = \{v\}$ $\forall v\in V_{start}$ and thus $\Psi_{r^{end}, o^{start}} = id$.
+    Let $i_1: V^1\to V^1 + V^2$, $i_2: V^2\to V^1 + V^2$ be the coproduct inclusions. We prove by construction of $G_1;G_2$ that the following function is an isomorphism
 
-    Thus $r' = r^{start} = r$, $H' = H_{start}\cup H_{end} = H$, $V = $ \textcolor{red}{this breaks because in the statement about $\psi$ we actually have that if $v\in V_{start}\cap V_{end}$ then we map one coproduct inclusion (the one from $V_{start}$) into $v\hookrightarrow V_{start} + V_{end}$ to the other (from $V_{end}$) and then remove the one from $v_{start}$ because it's in an output interface leaving us with just one of the copies. How to do this neatly?}
+    \begin{align*}
+        f: V\to (V^1 + V^2)\setminus i_1[\bigcup_{i\leq |o^1|}o^1_i], \quad f(v) = \begin{cases}
+            i_1(v) & v\in V^1\setminus V^2\\
+            i_2(v) & \text{else}
+        \end{cases}
+    \end{align*}
+
+    But first,
+    \begin{align*}
+        V^{G_1;G_2} \defeq (V^1 + V^2) \setminus i_1[\bigcup_{i\leq |o^1|}o^1_i] = (V^1 + V^2) \setminus i_1[V^1\cap V^2] = f[V]
+    \end{align*}
+    which confirms that the function has the right domain and image.    
+
+    First work out
+    \begin{align*}
+        \psi_{r^2, o^1}(v) &:= 
+        \begin{cases}
+            i_2[\displaystyle\bigcup_{\substack{i\leq |o^1| \\ v \in o^1_i}} r^2_i]& \text{if } \exists i \leq |o^1| \text{ such that } v \in o^1_i \\
+            \{i_1(v)\} & \text{otherwise}
+        \end{cases}\\
+        \intertext{by $o^1=r^2$ we get}
+        &=
+        \begin{cases}
+            \{i_2(v)\} & \text{if } v\in V^1\cap V^2\\
+            \{i_1(v)\} & \text{otherwise}
+        \end{cases}\\
+        &= \{f(v)\}
+    \end{align*}
+
+    Therefore
+    \begin{align*}
+        H^{G_1;G_2} &\defeq \left\{ \left(i_1(u), f[U']\right) : (u, U') \in H^1 \right\} \cup i_2[H^2]\\
+        &= \left\{ \left(f(u), f[U']\right) : (u, U') \in H^1 \right\} \cup \{(f(u), f[U'] : (u,U')\in H^2)\}\\
+        &= \{(f(u), f[U'] : (u,U')\in H)\}\\
+    \end{align*}
+
+    Which proves $f$ to be an isomorphism.
+    
 \end{proof}
 
 \begin{definition}
     Let $G,F$ be hypergraphs such that $|o^G| \leq |r^F|$ we extend the notion of the sequential composition given by \ref{def_seq_comp} to asymmetric graph compositions. Write 
-
     \begin{align*}
         G\seq^+ F = (g', r', o^F, \L^G\sqcup \L^F, A^G\cup A^F)
     \end{align*}
@@ -582,14 +617,14 @@ The sequential composition of ranked hypergraphs has the following properties:
             r^F_i & else
         \end{cases}
     \]
-\end{definition}
+\end{definition} % extended seq composition
 
 By separation of cases we trivially extend theorem \ref{thm:assoc} to the following result:
 \begin{corollary}
     $\seq^+$ is associative
 \end{corollary}
 
-\subsection{Simplicial set over ranked term graphs}
+\section{Simplicial set over ranked term graphs}
 \begin{definition}
     Let $V$ be the vertex set of a ranked hypergraph.\\
     We define the monoid $\M = (\P(V)^2, (\varnothing, \varnothing), \cup\times\cup)$. 
@@ -675,7 +710,7 @@ Define the simplicial set $\H$ by $\H_n = HG(n,n)$. And the face and degeneracy 
     Thus $\pi_n$ is a simplicial morphism. Therefore since $N(\M)$ is a simplicial set by definition the simplicial identities also hold for $d^{\H}$ and $s^{\H}$. Therefore $\H$ is a simplicial set.
 \end{proof}
 
-\subsection{Coalgebraic behaviour}
+\section{Coalgebraic behaviour}
 To add behaviour to the hypergraph simplicial set we define pointed F-coalgebras by the endofunctor
 
 \begin{definition}

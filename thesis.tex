@@ -89,6 +89,7 @@
 \newcommand{\Set}{\mathbf{Set}}
 \newcommand{\seq}{;}
 \newcommand{\pred}{\text{pred}}
+\newcommand{\textover}[2]{\mathrel{\overset{\makebox[0pt]{\mbox{\normalfont\tiny\sffamily #1}}}{#2}}}
 
 \begin{document}
 \include{titlepage.tex}
@@ -391,7 +392,7 @@ such that
 \begin{definition}\label{def_seq_comp}
 Let $G, F$ be hypergraphs such that $|o^G| = |r^F|$, their composition is defined as follows:
 \begin{align}
-    G\seq F = (g', r', (i_F[o_i^F])_{i\leq |o^F|}, \L^G\sqcup \L^F, A^G\cup A^F)
+    G\seq F = (g', r', i_F[o^F] \defeq (i_F[o_i^F])_{i\leq |o^F|}, \L^G\sqcup \L^F, A^G\cup A^F)
 \end{align}
 
 We obtain $g' = (V,H)$ by the following procedure:
@@ -405,26 +406,26 @@ Define
 To get the hyperarcs we keep all elements but replace a vertex if it exists in an output, to do this neatly we define a pair of functions:
 
 \[
-\psi_{r^F, o^G}(v) := 
+\psi_{G,F}(v) := 
 \begin{cases}
     i_F[\displaystyle\bigcup_{\substack{i\leq |o^G| \\ v \in o^G_i}} r^F_i] & \text{if } \exists i \leq |o^G| \text{ such that } v \in o^G_i \\
-    \{i_G(v)\} & \text{otherwise}
+    \{i_G(v)\} & \text{else}
 \end{cases}
 \]
 
 \[
-\Psi_{r^F, o^G}(U') := \bigcup_{v \in U'} \psi_{r^F, o^G}(v)
+\Psi_{G, F}(U') := \bigcup_{v \in U'} \psi_{G, F}(v)
 \]
 
 \[
-H := \left\{ \left(i_G(u), \Psi_{r^F, o^G}(U')\right) : (u, U') \in H^G \right\} \cup i_F[H^F]
+H := \left\{ \left(i_G(u), \Psi_{G, F}(U')\right) : (u, U') \in H^G \right\} \cup i_F[H^F]
 \]
 
 So for all $i$, in each arc $v$ that ends in a vertex in $o_i^G$, we replace that vertex in the arc with $r_i^F$. 
 
 And we obtain $r'$ by taking over the original $r^G$ and `connecting through' for vertices which are both minimal and maximal:
 \begin{align*}
-    r'_i = \Psi_{r^F, o^G}(r^G_i)
+    r'_i = \Psi_{G, F}(r^G_i)
 \end{align*}
 \end{definition} % seq composition
 
@@ -433,36 +434,36 @@ This composition allows for a left identity $id_n$ namely $id_n = ((\{1,2,\dots,
 \begin{lemma}\label{lem:psieq}
     Let $G,K,F$ be a DAH and $U\subseteq V^G$ a set of vertices. It holds that:
     \[
-        \Psi_{r^F, o^K}\circ \Psi_{r^K, o^G}(U) = \Psi_{r^F\seq r^K, o^G}(U)
+        \Psi_{G;K, F}\circ \Psi_{G, K}(U) \cong \Psi_{G, F;K}(U)
     \]
 \end{lemma}
 
 \begin{proof}
     We prove the lemma for a singleton, this then extends trivially to all subsets $U\subseteq V^G$. Let $v\in V^G$, we proceed by using the definitions:
     \begin{align*}
-        \Psi_{r^F, o^K}\circ \psi_{r^K, o^G}(v) &= 
+        \Psi_{G;K, F}\circ \psi_{G, K}(v) &= 
         \begin{cases}
-            \{v\} & v\notin \cup_i o_i^G\\
-            \Psi_{r^F, o^K}\left(\bigcup_{\substack{i \leq |r^K| \\ v \in o^G_i}} r^K_i\right) & \text{else}
+            \{i_{V^G + V^K\to (V^G + V^K) + V^F}(i_{V^G\to V^G + V^K}(v))\} & v\notin \cup_i o_i^G\\
+            \Psi_{G;K, F}\left(i_{V^K\to V^G + V^K}\left[\bigcup_{\substack{j \leq |r^K| \\ v \in o^G_j}} r^K_j\right]\right) & \text{else}
         \end{cases}\\
         \intertext{Because both unions are finite we can exchange them: }
         &= 
         \begin{cases}
-            \{v\} & v\notin \cup_i o_i^G\\
-            \bigcup_{\substack{i \leq |r^K| \\ v \in o^G_i}} \Psi_{r^F, o^K} (r^K_i) & \text{else}\\
+            \{i_{V^G + V^K\to (V^G + V^K) + V^F}(i_{V^G\to V^G + V^K}(v))\} & v\notin \cup_i o_i^G\\
+            \bigcup_{\substack{j \leq |r^K| \\ v \in o^G_j}} \Psi_{G;K, F} (i_{V^K\to V^G + V^K}[r^K_j]) & \text{else}\\
         \end{cases}\\
-        \intertext{By definition $r^{K\seq F}_i \defeq \Psi_{r^F, o^K} (r^K_i)$ and hence}
-        &=
+        \intertext{By definition $r^{K\seq F}_i \defeq \Psi_{K, F} (r^K_i)$ and hence from associativity of coproducts up to isomorphism}
+        &\cong
         \begin{cases}
-            \{v\} & v\notin \cup_i o_i^G\\
-            \bigcup_{\substack{i\leq  |r^{K\seq F}| \\ v \in o^G_i}} r^{K\seq F}_i & \text{else}\\
+            \{i_{V^G\to V^G + V^K + V^F}(v))\} & v\notin \cup_i o_i^G\\
+            \bigcup_{\substack{j\leq  |r^{K\seq F}| \\ v \in o^G_j}} i_{V^K + V^F\to V^G + V^K + V^F}r^{K\seq F}_j & \text{else}\\
         \end{cases}\\
-        &= \psi_{r^F\seq r^K, o^G}(v)
+        &= \psi_{G, K;F}(v)
     \end{align*}
 
     Taking unions of singletons then yields:
     \[
-        \Psi_{r^F, o^K}\circ \Psi_{r^K, o^G}(U) = \Psi_{r^F\seq r^K, o^G}(U)
+        \Psi_{K,F}\circ \Psi_{G, K}(U) \cong \Psi_{G,K;F}(U)
     \]
 \end{proof}
 
@@ -471,7 +472,7 @@ Which lets us prove the following theorem:
 \begin{theorem}\label{thm:assoc}
 The sequential composition of ranked hypergraphs has the following properties:
     \begin{enumerate}
-        \item $\seq$ is associative
+        \item $\seq$ is associative up to ranked hypergraph isomorphism
         \item $id_n \seq G \cong G$
     \end{enumerate}
 \end{theorem} % associativity
@@ -602,7 +603,7 @@ The sequential composition of ranked hypergraphs has the following properties:
 
     Now, let $G\in HG$ and assume $D(G) \leq 1$. This is trivially generated by $HG_1$ as $G\in HG_1$.
 
-    Proceed by induction, assume all $G\in HG$ with $D(G) = n$ are generated by $HG_1$. Take $G\in HG$ with $D(G) = n+1$. From the just proven result there exist $G_1\in HG$, $G_2\in HG_1$ such that $D(G_1) = n$. Therefore there exists a sequence $(G_11, \dots, G_{1n}) \in $ such that $G_11;\dots;G_{1n}\cong G_1$. Take as sequence $(G_11, \dots, G_{1n}, G_2)$, then $G_11; \dots; G_{1n}; G_2 \cong G_1; G_2 \cong G$. Thus all ranked hypergraphs of depth $n+1$ are generated by $HG$.
+    Proceed by induction, assume all $G\in HG$ with $D(G) = n$ are generated by $HG_1$. Take $G\in HG$ with $D(G) = n+1$. From the just proven result there exist $G_1\in HG$, $G_2\in HG_1$ such that $D(G_1) = n$. Therefore there exists a sequence $(G_{11}, \dots, G_{1n}) \in $ such that $G_11;\dots;G_{1n}\cong G_1$. Take as sequence $(G_11, \dots, G_{1n}, G_2)$, then $G_11; \dots; G_{1n}; G_2 \cong G_1; G_2 \cong G$. Thus all ranked hypergraphs of depth $n+1$ are generated by $HG$.
 
     By induction the statement holds for all $n$. Therefore $HG$ is generated by $HG_1$.
 \end{proof}

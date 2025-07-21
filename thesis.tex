@@ -20,6 +20,7 @@
 \usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{theoremref}
+\usepackage{float}
 
 \makeatletter
 \renewcommand{\th@definition}{%
@@ -30,7 +31,7 @@
 \makeatother
 
 \makeatletter
-\renewcommand{\th@plain}{%
+\renewcommand{\th@plain}{
   \thm@preskip 18pt \relax
   \thm@postskip 18pt \relax
 }
@@ -42,6 +43,7 @@
 
 \theoremstyle{definition}
 \newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
 \newtheorem{example}[theorem]{Example}
 
 \usepackage{bbm}
@@ -87,15 +89,19 @@
 \renewcommand{\H}{\mathcal{H}}
 \newcommand{\finP}{\mathcal{P}_{\omega}}
 \newcommand{\Set}{\mathbf{Set}}
+\newcommand{\JSL}{\text{JSL}}
 \newcommand{\seq}{;}
 \newcommand{\pred}{\text{pred}}
 \newcommand{\textover}[2]{\mathrel{\overset{\makebox[0pt]{\mbox{\normalfont\tiny\sffamily #1}}}{#2}}}
+\newcommand{\beh}{\overline{c}}
+
+%\setlength{\parskip}{1em}
 
 \begin{document}
 \include{titlepage.tex}
 \begin{abstract}
 \noindent
-This thesis introduces a construction of automata for concurrent languages. This is done by defining ranked hypergraphs, hypergraphs with interfaces that can be composed associatively. A simplicial set over these graphs is defined and we define F-coalgebras which give a nondeterministic transition model over the cells. The union of all paths of a tree resulting from a certain coalgebra gives a language of traces that support concurrent and sequential composition through the found operations on ranked hypergraphs. 
+This thesis introduces a construction of automata for concurrent languages. This is done by defining ranked hypergraphs, hypergraphs with interfaces that can be composed associatively. A simplicial set over these graphs is defined and we define F-coalgebras which give a nondeterministic transition model over the cells. Using a coalgebra we can parse a ranked hypergraph, and find out if it is part of the coalgebra's language.
 \end{abstract}
 
 \bigskip
@@ -108,14 +114,17 @@ This thesis introduces a construction of automata for concurrent languages. This
 \setcounter{page}{1}
 
 \section{Introduction} \label{introduction}
+Finite automata and regular languages form the foundation of classical formal language theory. Deterministic finite automata (DFA) provide a simple and elegant model for accepting regular languages, with Kleene's theorem stating their equivalence to regular expressions. In this setting, words are built sequentially from single letters in an alphabet, and state transitions are deterministic.
 
-In this section we give an introduction to the problem addressed in this thesis.
+However, many systems in practice exhibit inherently concurrent behaviour, where actions could occur in parallel with complex dependencies. In a previous attempt to model this behaviour, higher-dimensional automata (HDA) have been proposed. In HDA, concurrent actions are modelled using paths through hypercubes. But this combination of structure and behaviour is constricting and leads to just a small set of modelled languages.
 
-\subsection{The problem}
+In this thesis, we develop an approach to model concurrent regular languages which separates structure from behaviour: simplicial coalgebras over ranked hypergraphs. 
 
-\subsection{Earlier research}
+We introduce ranked hypergraphs with interfaces that allow associative composition. The interfaces give a way to connect dependencies. This composition allows for a generator which consists of graphs of depth 1. 
 
-\subsection{Thesis overview}
+The generator allows for piece-by-piece parsing of a graph. Mirroring how finite automata parse a word character by character. With the alphabet being the generator.
+
+We will first introduce the necessary background on simplicial sets, subobject identifiers and coalgebras. We then formalize ranked hypergraphs and their compositions, describe the simplicial structure, and finally define the coalgebraic behaviour function which gives the parsing semantics.
 
 \newpage
 \section{Background}
@@ -205,6 +214,72 @@ In this section we give an introduction to the problem addressed in this thesis.
 \begin{proof}
     Given that $\delta_i$, $\sigma_i$ generate the morphisms in $\Delta$, diagram \ref{eq:nat-trans} automatically commutes for all $f$ if it does so for $\delta$ and $\sigma$.
 \end{proof}
+
+\subsection{Semilattices}
+\begin{definition}
+    Let $P$ be a partially ordered set (poset), the join (or least upper bound) is a binary operator $\vee$ such that for all $x,y,z\in P$:
+    \begin{itemize}
+        \item $x\leq x\vee y$
+        \item if $x\leq a$ and $y\leq a$ then $x\vee y\leq a$
+    \end{itemize}
+
+    the meet (or greatest lower bound) is a binary operator $\wedge$ such that for all $x,y,z\in P$:
+        \begin{itemize}
+        \item $x\wedge y\leq x$
+        \item if $z\leq x$ and $z\leq y$ then $z\leq x\wedge y$
+    \end{itemize}
+\end{definition}
+
+\begin{definition}
+    A \emph{join-semilattice} is a triple $(A, \vee, \bot)$ consisting of
+    \begin{itemize}
+        \item A partially ordered set $A$
+        \item A binary join $\vee: A\times A \to A$ which is commutative, associative, and idempotent: $a\vee a = a$
+        \item A unit $\bot$ such that $a \vee\bot = a$
+    \end{itemize}
+
+    The collection of all join-semilattices forms a category JSL.
+
+    A \emph{meet-semilattice} is the same as a join-semilattice, except we have as operator a meet instead of a join.
+
+    An object that is both a meet-, and a join-semilattice is called a \emph{lattice}. 
+\end{definition}
+
+\begin{definition}
+    Let $X$ be a set. Let $\finP(X)$ be the set of finite subsets of $X$, then $(\finP(X), \cup, \varnothing)$ is a JSL.
+\end{definition}
+
+\begin{definition}
+    The free join-semilattice on a set $X$ is the unique JSL $F(X)$ together with a function $\eta: X\to F(X)$ such that for all $A\in\JSL$, $f: X \to A$ there exists a unique JSL morphism $\hat{f}: F(X)\to A$ such that the following diagram commutes:
+    \begin{center}
+        \begin{tikzcd}
+              X \arrow[d,"\eta"]\arrow[r,"f"] & A  \\
+              F(X) \arrow[ur, swap, "\hat{f}"]
+        \end{tikzcd}
+    \end{center}
+\end{definition}
+
+This definition is a special case of the more general notion of a free object \cite{nlab:free_object}.
+
+\begin{lemma}\label{lem:free_jsl}
+    Let $X\in \Set$, $\finP(X)$ is the free JSL on $X$.
+\end{lemma}
+
+\begin{proof}
+    Take $\eta(x) = \{x\}$. Let $A$ be a join-semilattice, $f: X \to A$ a function and let $\hat{f}(\{x_1, \dots, x_n\}) = f(x_1)\vee \dots \vee f(x_n)$.\
+
+    Then $(\hat{f}\circ \eta)(x) = \hat{f}(\{x\}) = f(x)$. And thus the finite powerset is the unique free JSL.
+\end{proof}
+
+\begin{definition}
+    A Heyting algebra H is a lattice together with the operation of implication $\Rightarrow: H\times H \to H$ which for all $x,y,z\in H$ satisfies:
+    \[
+        x\wedge y \leq z \iff x\leq y\Rightarrow z
+    \]
+\end{definition}
+
+Moreover, a Heyting algebra where the \emph{principle of excluded middle} holds, which states every proposition is either true or false, is a Boolean algebra. When writing $\vdash$ for $\leq$ you get precisely the classical notion of propositional logic.
+
 \subsection{Subobject Classifiers}
 \begin{definition}
     Let $f, g$ be morphisms defined by
@@ -246,10 +321,10 @@ In this section we give an introduction to the problem addressed in this thesis.
 \end{definition}
 
 \begin{example}
-    In the category $\mathrm{Set}$ where objects are sets and morphisms are functions, the subobject classifier is $\Omega = \{0,1\}$ and if $f = \id$ then $\chi_A$ is the characteristic map of the subset $A\subseteq X$.
+    In the category $\mathrm{Set}$ where objects are sets and morphisms are functions, the subobject classifier is $\Omega = \mathbb{B} \defeq \{0,1\}$ and if $f = \id$ then $\chi_A$ is the characteristic map of the subset $A\subseteq X$.
 \end{example}
 
-\begin{lemma}[{\cite[Lemma.~1.6.5]{Elephant}}]\label{lem:exist-sub_class}
+\begin{lemma}[{\cite[Lemma.~1.6.6]{Elephant}}]\label{lem:exist-sub_class}
     For any small category $C$, the functor category $[C, \mathrm{Set}]$ has a subobject classifier.
 \end{lemma}
 
@@ -258,11 +333,19 @@ In this section we give an introduction to the problem addressed in this thesis.
 \end{corollary}
 
 \begin{proof}
-    Given a category $C$ the presheaf category is the same as the functor category $[C^{op}, \mathrm{Set}]$. $\Delta$ is a small category (in this thesis we won't go into detail what exactly constitutes a small category), and therefore so is its dual. From \ref{lem:exist-sub_class} we find that $\mathrm{sSet} = [\Delta^{op}, \mathrm{Set}]$ has a subobject classifier $\Omega$.
+    Given a category $C$, the presheaf category is the same as the functor category $[C^{op}, \mathrm{Set}]$. $\Delta$ is a small category (in this thesis we won't go into detail what exactly constitutes a small category), and therefore so is its dual. From \ref{lem:exist-sub_class} we find that $\mathrm{sSet} = [\Delta^{op}, \mathrm{Set}]$ has a subobject classifier $\Omega$.
 \end{proof}
 
+\begin{lemma}[{\cite[Lemma.~1.6.3.ii]{Elephant}}]\label{lem:heyting}
+    If C is coherent, then $\Omega$ is an internal Heyting algebra.
+\end{lemma}
+
+\begin{corollary}
+    The subobject classifier $\Omega$ of $\mathrm{sSet}$ is an internal Heyting algebra.
+\end{corollary}
+
 \subsection{Coalgebras}
-In this thesis we primarily work with $F$-coalgebras, which we will introduce next, these are a special type of coalgebra which fits our usecase very well. A general definition therefore is not necessary as the definition of $F$-coalgebras is self-contained.
+In this thesis we primarily work with $F$-coalgebras, which we will introduce next, these are a special type of coalgebra which fits our use-case very well. A general definition therefore is not necessary as the definition of $F$-coalgebras is self-contained.
 
 \begin{definition}
     Given a category $C$ and an endofunctor $F: C \to C$. An $F$-coalgebra $(A,\alpha)$ consists of an object $A\in C$ called the carrier and a morphism $\alpha: A\to FA$.
@@ -304,6 +387,10 @@ In this thesis we primarily work with $F$-coalgebras, which we will introduce ne
     In figure \ref{ex-lab_tran_sys} a labelled transition system is given where $\alpha(1) = \{(a,3),(b,2)\}$, $\alpha(2) = \{(a,3)\}$, $\alpha(3) = \varnothing$.
 \end{example}
 
+\begin{definition}
+    A pointed $F$-coalgebra over a functor $F$ is a triple $(X, \alpha: X\to FX, x_0)$ where $X$ is the carrier as usual and $x_0$ is the \emph{base} or in our case an \emph{initial state}.
+\end{definition}
+
 \newpage
 \section{Ranked Hypergraphs}
 \begin{definition}
@@ -322,8 +409,6 @@ A \emph{ranked hypergraph} $(g, r, o, \L, A)$ consists of:
 \end{definition}
 \emph{Notation:} In this thesis we refer to ranked hypergraphs as just hypergraphs as we will only be working with this kind. $HG(n,m)$ is the set of ranked term  hypergraphs of rank $(n,m)$
 
-A ranked hypergraph with $|r| = |o|$ is called symmetric.
-
 \begin{example}
     In figure \ref{fig:DAH-example} a ranked hypergraph is drawn. Left is the root interface, of rank 3, on the right is the output interface of rank 2. 
 
@@ -332,7 +417,7 @@ A ranked hypergraph with $|r| = |o|$ is called symmetric.
         \item $V = \{1,2,3,4,5,6\}$
         \item $H = \{(1, \{4\}), (2, \{5,6\})\}$
         \item $r = (\{1\}, \{2\}, \{3\})$, $o = (\{4\}, \{3,6\})$
-        \item $A = \{a,b\}$, $\L((\{1\}, \{4\})) = b$, $\L((\{2\}, \{5,6\})) = a$
+        \item $A = \{a,b\}$, $\L((1, \{4\})) = b$, $\L((2, \{5,6\})) = a$
     \end{itemize}
     
     \begin{figure}[h]
@@ -367,7 +452,7 @@ A ranked hypergraph with $|r| = |o|$ is called symmetric.
 \end{figure}
 \end{example} % ranked hypergraph
 
-\begin{definition}
+\begin{definition}\label{def_isomorphism}
 Let $G$ and $H$ be ranked hypergraphs of equal rank $(n,m)$,
 
 An \emph{isomorphism} between $G$ and $F$ is a bijection
@@ -388,6 +473,10 @@ such that
 \]
 \end{definition} % ranked hypergraph isomorphism
 
+\begin{remark}\label{rem_rename}
+    When proving a property which involves multiple hypergraphs, we can assume disjointness of vertex sets. But then the property will only hold up to isomorphism. This is because renaming of vertices is an isomorphism in the sense of definition \ref{def_isomorphism}.
+\end{remark}
+
 \subsection{Composition of ranked hypergraphs}
 \begin{definition}\label{def_seq_comp}
 Let $G, F$ be hypergraphs such that $|o^G| = |r^F|$, their composition is defined as follows:
@@ -398,7 +487,6 @@ Let $G, F$ be hypergraphs such that $|o^G| = |r^F|$, their composition is define
 We obtain $g' = (V,H)$ by the following procedure:
 
 Define 
-
 \begin{align*}
     V = (V^G + V^F) \setminus i_G[\bigcup_{i\leq |o^G|}o^G_i]
 \end{align*}
@@ -429,56 +517,62 @@ And we obtain $r'$ by taking over the original $r^G$ and `connecting through' fo
 \end{align*}
 \end{definition} % seq composition
 
+\begin{remark}\label{rem_disj_seq_comp}
+    When vertex sets are disjoint, we can simply take set union as coproduct. Which makes the inclusions identity maps.
+\end{remark}
+
 This composition allows for a left identity $id_n$ namely $id_n = ((\{1,2,\dots,n\}, \varnothing), (\{i\})_{i\in n}, (\{i\})_{i\in n})$.
 
 \begin{lemma}\label{lem:psieq}
-    Let $G,K,F$ be a DAH and $U\subseteq V^G$ a set of vertices. It holds that:
+    Let $G,K,F$ be DAH and $U\subseteq V^G$ a set of vertices, it holds that:
     \[
         \Psi_{G;K, F}\circ \Psi_{G, K}(U) \cong \Psi_{G, F;K}(U)
     \]
 \end{lemma}
 
 \begin{proof}
-    We prove the lemma for a singleton, this then extends trivially to all subsets $U\subseteq V^G$. Let $v\in V^G$, we proceed by using the definitions:
+Let $G,K,F$ be DAH and $U\subseteq V^G$ a set of vertices. Assume disjoint vertex sets. 
+
+We prove the lemma for a singleton, this then extends trivially to all subsets $U\subseteq V^G$. Let $v\in V^G$, we proceed by using the definitions:
     \begin{align*}
         \Psi_{G;K, F}\circ \psi_{G, K}(v) &= 
         \begin{cases}
-            \{i_{V^G + V^K\to (V^G + V^K) + V^F}(i_{V^G\to V^G + V^K}(v))\} & v\notin \cup_i o_i^G\\
-            \Psi_{G;K, F}\left(i_{V^K\to V^G + V^K}\left[\bigcup_{\substack{j \leq |r^K| \\ v \in o^G_j}} r^K_j\right]\right) & \text{else}
+            \{v\} & v\notin \cup_i o_i^G\\
+            \Psi_{G;K, F}\left(\bigcup_{\substack{j \leq |r^K| \\ v \in o^G_j}} r^K_j\right) & \text{else}
         \end{cases}\\
         \intertext{Because both unions are finite we can exchange them: }
         &= 
         \begin{cases}
-            \{i_{V^G + V^K\to (V^G + V^K) + V^F}(i_{V^G\to V^G + V^K}(v))\} & v\notin \cup_i o_i^G\\
-            \bigcup_{\substack{j \leq |r^K| \\ v \in o^G_j}} \Psi_{G;K, F} (i_{V^K\to V^G + V^K}[r^K_j]) & \text{else}\\
+            \{v\} & v\notin \cup_i o_i^G\\
+            \bigcup_{\substack{j \leq |r^K| \\ v \in o^G_j}} \Psi_{G;K, F} (r^K_j) & \text{else}\\
         \end{cases}\\
-        \intertext{By definition $r^{K\seq F}_i \defeq \Psi_{K, F} (r^K_i)$ and hence from associativity of coproducts up to isomorphism}
-        &\cong
+        \intertext{By definition $r^{K\seq F}_i \defeq \Psi_{K, F} (r^K_i)$ and hence}
+        &=
         \begin{cases}
-            \{i_{V^G\to V^G + V^K + V^F}(v))\} & v\notin \cup_i o_i^G\\
-            \bigcup_{\substack{j\leq  |r^{K\seq F}| \\ v \in o^G_j}} i_{V^K + V^F\to V^G + V^K + V^F}r^{K\seq F}_j & \text{else}\\
+            \{v\} & v\notin \cup_i o_i^G\\
+            \bigcup_{\substack{j\leq  |r^{K\seq F}| \\ v \in o^G_j}} r^{K\seq F}_j & \text{else}\\
         \end{cases}\\
         &= \psi_{G, K;F}(v)
     \end{align*}
 
     Taking unions of singletons then yields:
     \[
-        \Psi_{K,F}\circ \Psi_{G, K}(U) \cong \Psi_{G,K;F}(U)
+        \Psi_{K,F}\circ \Psi_{G, K}(U) = \Psi_{G,K;F}(U)
     \]
+
+    By remark \ref{rem_rename} the equality holds up to isomorphism for all $G,K,F$, regardless of vertex sets.
 \end{proof}
 
-Which lets us prove the following theorem:
-
 \begin{theorem}\label{thm:assoc}
-The sequential composition of ranked hypergraphs has the following properties:
+Let G,K,F be ranked hypergraphs. The following properties hold:
     \begin{enumerate}
-        \item $\seq$ is associative up to ranked hypergraph isomorphism
-        \item $id_n \seq G \cong G$
+        \item $G\seq(K\seq F) \cong (G\seq K) \seq F$
+        \item $id_{|r^G|} \seq G \cong G$
     \end{enumerate}
 \end{theorem} % associativity
 
-\begin{proof}
-    Let $G,K,F$ be ranked hypergraphs. It is clear from the definition that $(G \seq K) \seq F = G \seq (K \seq F)$ if and only if their graphs and root interfaces are equal.
+\begin{proof}{$G\seq(K\seq F) \cong (G\seq K) \seq F$}\\
+    Let $G,K,F$ be ranked hypergraphs with disjoint vertex sets. Use remark \ref{rem_disj_seq_comp}. It is clear from the definition that $(G \seq K) \seq F = G \seq (K \seq F)$ if and only if their graphs and root interfaces are equal.
          
     Let $r$, $r'$ be the root interfaces for $(G \seq K) \seq F$, $G \seq (K \seq F)$ respectively.  
     We expand the definition and use lemma \ref{lem:psieq} to show that $r = r'$. Let $i\leq |r^G|$, we get:
@@ -508,12 +602,37 @@ The sequential composition of ranked hypergraphs has the following properties:
         &= \left\{ \left(u, \Psi_{r^{K \seq F}, o^G}(U')\right) : (u, U') \in H^G \right\} \cup H^{K \seq F}\\
         &= H'
     \end{align*}
+
+    Which proves equality for disjoint graphs. Which in turn gives $G\seq(K\seq F) \cong (G\seq K) \seq F$ for any $G,K,F$ by using remark \ref{rem_rename}.
+\end{proof}
+
+\begin{proof}{$id_n \seq G \cong G$}\\
+    Let $G$ be a ranked hypergraph with $|r^G| = n$ and \[id_n = ((\{1,2,\dots,n\}, \varnothing), (\{i\})_{i\in n}, (\{i\})_{i\in n})\] Assume disjoint vertex sets. Using remark \ref{rem_disj_seq_comp} we get:
+
+    \[
+        V = (\{1,2,\dots,n\}\cup V^G) \setminus \bigcup_{i\in n}\{i\} = V^G
+    \]
+    
+    \[
+        H = \left\{ \left(u, \Psi_{id_n\seq G}(U')\right) : (u, U') \in H^{id_n} \right\} \cup H^G = H^G
+    \]
+
+    \[
+        \psi_{id_n\seq G} (i) = r^G_i \quad \forall i\in \{1,2,\dots,n\}
+    \]
+
+    Therefore 
+    \[
+        r'_i = \Psi_{id_n\seq G}(r^{id_n}_i) = \psi_{id_n\seq G}(i) = r^G_i
+    \]
+
+    From \ref{rem_rename} we conclude $id_n \seq G \cong G$ for any ranked hypergraph $G$.
 \end{proof}
 
 \subsection{Generating hypergraphs}
 
 \begin{definition}
-    First define the notion of predecessor of a vertex as:
+    First define the notion of predecessors of a vertex as:
     \begin{align*}
         \pred(v) = \{w\in V : \exists(w, U') \text{ s.t. } v\in U'\}
     \end{align*}
@@ -532,7 +651,7 @@ The sequential composition of ranked hypergraphs has the following properties:
     \end{align*}
 \end{definition} % depth of hypergraph
 
-\begin{theorem}
+\begin{theorem}\label{thm_generator}
     The set of ranked hypergraphs is generated by the subset $$HG_1 \defeq \{G\in HG : D(G) \leq 1\}$$
 
     That is, for all $G\in HG$ there exists an $n\in \N_{\geq 1}$ and a sequence $(G_1, G_2, \dots, G_n)\in HG_1^n$, such that $G_1;G_2;\dots;G_n \cong G$
@@ -555,12 +674,11 @@ The sequential composition of ranked hypergraphs has the following properties:
         &H^2 = \{(u, U')\in H : d(u) = n-1\}
     \end{align*}
 
-    Note that for all $(u,U') \in H_1$ we have $u\in V^1\setminus V^2$ because its degree is $< n-1$ and it isn't maximal and therefore not part of $o$. Furthermore, note that $(H^1, H^2)$ partitions $H$.
+    Note that for all $(u,U') \in H_1$ we have $u\in V^1\setminus V^2$ because its degree is $< n-1$ and it isn't maximal and therefore not part of $o$. Furthermore, $(H^1, H^2)$ partitions $H$.
 
     Finally let $o^1 = r^2$ be any enumeration of $V^1\cap V^2$. 
 
     Let $i_1: V^1\to V^1 + V^2$, $i_2: V^2\to V^1 + V^2$ be the coproduct inclusions. We prove by construction of $G_1;G_2$ that the following function is an isomorphism
-
     \begin{align*}
         f: V\to (V^1 + V^2)\setminus i_1[\bigcup_{i\leq |o^1|}o^1_i], \quad f(v) = \begin{cases}
             i_1(v) & v\in V^1\setminus V^2\\
@@ -568,11 +686,11 @@ The sequential composition of ranked hypergraphs has the following properties:
         \end{cases}
     \end{align*}
 
-    But first,
-    \begin{align*}
-        V^{G_1;G_2} \defeq (V^1 + V^2) \setminus i_1[\bigcup_{i\leq |o^1|}o^1_i] = (V^1 + V^2) \setminus i_1[V^1\cap V^2] = f[V]
-    \end{align*}
-    which confirms that the function has the right domain and image.    
+    % But first,
+    % \begin{align*}
+    %     V^{G_1;G_2} \defeq (V^1 + V^2) \setminus i_1[\bigcup_{i\leq |o^1|}o^1_i] = (V^1 + V^2) \setminus i_1[V^1\cap V^2] = f[V]
+    % \end{align*}
+    % which confirms that the function has the right domain and image.    
 
     First work out
     \begin{align*}
@@ -587,7 +705,7 @@ The sequential composition of ranked hypergraphs has the following properties:
             \{i_2(v)\} & \text{if } v\in V^1\cap V^2\\
             \{i_1(v)\} & \text{otherwise}
         \end{cases}\\
-        &= \{f(v)\}
+        &= \{f(v)\} \quad \forall v\in V^1
     \end{align*}
 
     Therefore
@@ -603,7 +721,7 @@ The sequential composition of ranked hypergraphs has the following properties:
 
     Now, let $G\in HG$ and assume $D(G) \leq 1$. This is trivially generated by $HG_1$ as $G\in HG_1$.
 
-    Proceed by induction, assume all $G\in HG$ with $D(G) = n$ are generated by $HG_1$. Take $G\in HG$ with $D(G) = n+1$. From the just proven result there exist $G_1\in HG$, $G_2\in HG_1$ such that $D(G_1) = n$. Therefore there exists a sequence $(G_{11}, \dots, G_{1n}) \in $ such that $G_11;\dots;G_{1n}\cong G_1$. Take as sequence $(G_11, \dots, G_{1n}, G_2)$, then $G_11; \dots; G_{1n}; G_2 \cong G_1; G_2 \cong G$. Thus all ranked hypergraphs of depth $n+1$ are generated by $HG$.
+    Proceed by induction, assume all $G\in HG$ with $D(G) = n$ are generated by $HG_1$. Take $G\in HG$ with $D(G) = n+1$. From the just proven result there exist $G_1\in HG$, $G_2\in HG_1$ such that $D(G_1) = n$. Therefore there exists a sequence $(G_{11}, \dots, G_{1n}) \in $ such that $G_{11};\dots;G_{1n}\cong G_1$. Take as sequence $(G_{11}, \dots, G_{1n}, G_2)$, then $G_11; \dots; G_{1n}; G_2 \cong G_1; G_2 \cong G$. Thus all ranked hypergraphs of depth $n+1$ are generated by $HG$.
 
     By induction the statement holds for all $n$. Therefore $HG$ is generated by $HG_1$.
 \end{proof}
@@ -640,7 +758,7 @@ By separation of cases we trivially extend theorem \ref{thm:assoc} to the follow
 \begin{corollary}
     $\seq^+$ is associative
 \end{corollary}
-
+\newpage
 \section{Simplicial set over ranked term graphs}
 \begin{definition}
     Let $V$ be the vertex set of a ranked hypergraph.\\
@@ -664,7 +782,7 @@ From this monoid we define a simplicial set using the nerve construction.
 \end{definition}
 
 \begin{definition}
-Define the simplicial set $\H$ by $\H_n = HG(n,n)$. And the face and degeneracy maps:
+Define the simplicial set $\H$ by $\H_n = HG(n,n)$. With face and degeneracy maps:
 \begin{align*}
     &d_i^{\H} ((g, (U_1, \dots, U_n), (W_1, W_2, \dots, W_n), \L, A))\\
     &\quad=\begin{cases}
@@ -726,22 +844,14 @@ Define the simplicial set $\H$ by $\H_n = HG(n,n)$. And the face and degeneracy 
 
     Thus $\pi_n$ is a simplicial morphism. Therefore since $N(\M)$ is a simplicial set by definition the simplicial identities also hold for $d^{\H}$ and $s^{\H}$. Therefore $\H$ is a simplicial set.
 \end{proof}
-
+\newpage
 \section{Coalgebraic behaviour}
 To add behaviour to the hypergraph simplicial set we define pointed F-coalgebras by the endofunctor
 
-\begin{definition}
-    \[
-        F: sSet \to sSet, \quad FX = \Omega \times \finP(X \sqcup \uparrow X)^{\H}
-    \]
-    
-    Let $\Delta$ be the simplex category, we define $(-)^{\rhd}$ to be the functor which adds a new maximal element to a powerset. Precomposing this with the presheaf $X$ gives $\uparrow X = X\seq (-)^{\rhd}$. Thus from this construction, given an $x\in X_n$ we can only transition to elements in $X_m$ where $m\geq n$.
-    
-    We also define $F(f) = \B\times\finP(f \sqcup \uparrow f)^{\H}$, which just applies $f$ to all transitioned-to elements.
-\end{definition}
-
-\begin{definition}
-    A pointed $F$-coalgebra over a functor $F$ is a triple $(X, \alpha: X\to FX, x_0)$ where $X$ is the \emph{carrier set} and $x_0$ is the \emph{base} or in our case an \emph{initial state}.
+\begin{definition}\label{def_endofunc}
+    \begin{align*}
+        F: sSet \to sSet, \quad FX = \Omega \times \finP(X \sqcup \uparrow X)^{HG_1}
+    \end{align*}
 \end{definition}
 
 Through this definition we find out what a coalgebra does on our set. If we follow the repeated iteration of this coalgebra
@@ -757,11 +867,11 @@ We get by definition of $F(f)$ that $\alpha$ gets recursively applied to the tra
     &\hspace{40pt}(g_{02}\mapsto (0, \{g_{021}\mapsto x_{021}, g_{022}\mapsto x_{022}\})), \dots\})
 \end{align*}
 
-This is a tree structure with $x_0$ as root, $x_{01}, x_{02}, \dots$ as children etcetera. The transitions are through the hypergraphs. Non-accepting states are red, and accepting states are indicated by a green node. In figure \ref{ex:coalg-tree} a tree is visualized for some coalgebra. Here $x_{012}$ is an accepting state.
+Which is a tree structure with $x_0$ as root, $x_{01}, x_{02}, \dots$ as children etcetera. The transitions are through the hypergraphs.  In figure \ref{ex:coalg-tree} a tree is visualized for some coalgebra. Non-accepting states are red, and accepting states are indicated by a green node. Here $x_{012}$ is an accepting state.
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
-    \begin{tikzpicture}[->, level distance=3cm,
+    \begin{tikzpicture}[->, level distance=2cm,
             level 1/.style={sibling distance=4cm},
             level 2/.style={sibling distance=3cm},
             edge from parent node/.style={black},
@@ -815,18 +925,76 @@ This is a tree structure with $x_0$ as root, $x_{01}, x_{02}, \dots$ as children
 \end{figure}
 
 \begin{definition}
-    Given coalgebras $(X, \alpha: X\to FX, x_0)$, $(Y, \beta: Y\to FY, y_0)$, a function $f: X\to Y$ is a homomorphism if and only if
+    Let $(A, \vee, \bot)$ be a join-semilattice. We define the JSL morphism $\bigvee: \finP(A) \to A$ as the map making the following commute:
+
+    \begin{center}
+        \begin{tikzcd}
+              A \arrow[d,"\eta"]\arrow[r,"\id_{A}"] & A \\
+              \finP(A) \arrow[ur, swap, "\bigvee"]
+        \end{tikzcd}
+    \end{center}
+
+    by lemma \ref{lem:free_jsl} $\finP(A)$ is the free JSL, hence $\bigvee$ exists and is unique.
+\end{definition}
+
+\begin{definition}
+    Let $ev: A\times [A,B] \to B$, $(a, f)\mapsto f(a)$ be the evaluation morphism. We extend this to evaluate finite powersets by taking
     \begin{align*}
-        F(f)\circ \alpha = \beta \circ f\\
-        f(x_0) = y_0
+        \finP ev: \finP(A)\times [A,B] \to \finP(B)\\
+        \finP ev(\{a_1, \dots, a_n\}, f) = \{f(a_1), \dots, f(a_n)\}
     \end{align*}
 \end{definition}
 
-While a strict characterisation of the homomorphisms has evaded me thus far. It is known that the following property holds:
+To find out if a ranked hypergraph is part of a coalgebras language we split it up into parts of depth 1 using theorem \ref{thm_generator}. Which are then used left to right to transition between states. If any of the final states is accepting, the graph is part of the language.
 
-\begin{lemma}
-    The homomorphisms on $FX = \H \times \finP(X \sqcup \uparrow X)$ preserve transitions. That is, if $\alpha (x) = (g_x, \{x_1, x_2, \dots\})$ then $\beta(f(x)) = (g_x, \{f(x_1), f(x_2), \dots\})$
-\end{lemma}
+To formalise this we define a behaviour function.
+
+\begin{definition}
+    Let $(X, c, x_0)$ be a pointed F-coalgebra of \ref{def_endofunc}. Define the so called \emph{behaviour function} as
+    \begin{align*}
+        \beh : \H \to [X, \Omega] \\
+        \beh = \overline{(\beh_0, \beh_1)}
+    \end{align*}
+    Where $\beh$ is the inductive closure of $\beh_0, \beh_1$:\\
+    \[
+        \begin{array}{ll}
+            \beh_0: \1 \to [X, \Omega] & \beh_0 = \lambda(\pi_1\circ c)\\
+            \beh_1: HG_1\times [X, \Omega] \to [X, \Omega] & \beh_1 = \lambda_2 K
+        \end{array}
+    \]
+
+    Where $K$ is a morphism defined by the following commuting diagram
+    \begin{center}
+        \begin{tikzcd}
+            HG_1\times X \times [X,\Omega]\arrow[r, "K"] \arrow[d, swap, "\widetilde{\pi_2\circ c} \times \id"] & \Omega\\
+            \finP(X\sqcup \uparrow X)\times [X,\Omega] \arrow[r, "\finP ev"] & \finP(\Omega)\arrow[u, swap, "\bigvee"]
+        \end{tikzcd}
+    \end{center}
+\end{definition}
+\newpage
+
+\begin{definition}
+    Let $(X, c, x_0)$ be a pointed F-coalgebra of \ref{def_endofunc}. Define the so called \emph{behaviour function} as
+    \begin{align*}
+        \beh : \H \to \Omega^X \\
+        \beh = \overline{(\beh_0, \beh_1)}
+    \end{align*}
+    Where $\beh$ is the inductive closure of $\beh_0, \beh_1$:\\
+    \[
+        \begin{array}{ll}
+            \beh_0: \1 \to [X, \Omega] & \beh_0 = \lambda(\pi_1\circ c)\\
+            \beh_1: HG_1\times [X, \Omega] \to [X, \Omega] & \beh_1 = \lambda_2 K
+        \end{array}
+    \]
+
+    Where $K$ is a morphism defined by the following commuting diagram
+    \begin{center}
+        \begin{tikzcd}
+            HG_1\times X \times [X,\Omega]\arrow[r, "K"] \arrow[d, swap, "\widetilde{\pi_2\circ c} \times \id"] & \Omega\\
+            \finP(X\sqcup \uparrow X)\times [X,\Omega] \arrow[r, "\finP ev"] & \finP(\Omega)\arrow[u, swap, "\bigvee"]
+        \end{tikzcd}
+    \end{center}
+\end{definition}
 
 \newpage
 \section{Related Work}\label{relatedwork}

@@ -101,7 +101,7 @@
 \include{titlepage.tex}
 \begin{abstract}
 \noindent
-This thesis introduces a construction of automata for concurrent languages. This is done by defining ranked hypergraphs, hypergraphs with interfaces that can be composed associatively. A simplicial set over these graphs is defined and we define F-coalgebras which give a nondeterministic transition model over the cells. Using a coalgebra we can parse a ranked hypergraph, and find out if it is part of the coalgebra's language.
+We introduce ranked hypergraphs which give dependency hypergraphs interfaces, this results in associative sequential composition. We prove these graphs have as generator the graphs of depth 1. Putting these graphs in a simplicial context allows us to 
 \end{abstract}
 
 \bigskip
@@ -114,17 +114,54 @@ This thesis introduces a construction of automata for concurrent languages. This
 \setcounter{page}{1}
 
 \section{Introduction} \label{introduction}
-Finite automata and regular languages form the foundation of classical formal language theory. Deterministic finite automata (DFA) provide a simple and elegant model for accepting regular languages, with Kleene's theorem stating their equivalence to regular expressions. In this setting, words are built sequentially from single letters in an alphabet, and state transitions are deterministic.
+Finite automata and regular languages form the foundation of classical formal language theory. Deterministic finite automata (DFA) provide a simple and elegant model for accepting regular languages, with Kleene's theorem stating their equivalence to regular expressions. In this setting, words are sequential compositions from single letters in an alphabet, and state transitions are deterministic.
 
-However, many systems in practice exhibit inherently concurrent behaviour, where actions could occur in parallel with complex dependencies. In a previous attempt to model this behaviour, higher-dimensional automata (HDA) have been proposed. In HDA, concurrent actions are modelled using paths through hypercubes. But this combination of structure and behaviour is constricting and leads to just a small set of modelled languages.
+However, many systems exhibit concurrent behaviour, where actions occur in parallel with complex dependencies. In a previous attempt to model this behaviour, higher-dimensional automata (HDA) were proposed. In HDA, concurrent actions are modelled using paths through hypercubes. But this combination of structure and behaviour is constricting and leads to just a small set of described languages.
 
 In this thesis, we develop an approach to model concurrent regular languages which separates structure from behaviour: simplicial coalgebras over ranked hypergraphs. 
 
-We introduce ranked hypergraphs with interfaces that allow associative composition. The interfaces give a way to connect dependencies. This composition allows for a generator which consists of graphs of depth 1. 
+We introduce ranked hypergraphs with interfaces that allow associative composition up to renaming. The interfaces give a way to connect dependencies. This composition allows for a generator which consists of graphs of depth 1. 
 
 The generator allows for piece-by-piece parsing of a graph. Mirroring how finite automata parse a word character by character. With the alphabet being the generator.
 
 We will first introduce the necessary background on simplicial sets, subobject identifiers and coalgebras. We then formalize ranked hypergraphs and their compositions, describe the simplicial structure, and finally define the coalgebraic behaviour function which gives the parsing semantics.
+
+\newpage
+\section{Related Work}
+
+\subsection{Interface pomsets}
+In regular automata we work with single characters, which when sequentially composed build the words of languages. But in concurrent settings we need actions which have multiple events which can be parallel, dependent, weakly dependent, etcetera. But to be useful to use they also need a structure that allows composition, and most ideally a generator.
+
+For this, interface pomsets were introduced \cite{ipomsets2024}. 
+
+\begin{definition}
+    An \emph{ipomset} (over $\Sigma$) is a structure $(P, <, \dashrightarrow, S, T, \lambda)$ consisting of the following:
+    \begin{itemize}
+        \item a finite set $P$ of \emph{events}
+        \item a strict partial order (i.e., asymmetric, transitive, irreflexive) $<\, \subseteq P\times P$ called the precedence order
+        \item a strict partial order $\dashrightarrow\,\subseteq P\times P$ called the \emph{event order}
+        \item a subset $S\subseteq P$ called the \emph{source set}
+        \item a subset $T\subseteq P$ called the \emph{target set}
+        \item a \emph{labelling} $\lambda: P\to \Sigma$
+    \end{itemize}
+\end{definition}
+
+Here the precedence order is the intuitive one: if $a<b$ then $a$ must end before $b$ begins. The event order is a weaker notion which is necessary for sequential composition. The source and target sets are also for composition: if $a\in S$ then we can 'go to' the given ipomset with event $a$ still ongoing. Similarly if $a\in T$ then we can 'leave' with $a$ still ongoing, presumably to another ipomset which has $a$ in its source set.
+
+The generator of these ipomsets consists of graphs of discrete ($< = \varnothing$) starters ($S = P$) and terminators ($T = P$).
+
+The concept of discreteness in the generator elements inspired the generator of ranked hypergraphs, described in theorem \ref{thm_generator}.
+
+\subsection{Higher Dimensional Automata}
+A tried model for concurrent languages are Higher Dimensional Automata (HDA), first introduced in 1991 by Pratt and van Glabbeek \cite{Pra91, vG91}. An HDA is a \emph{precubical set} with start and end points. Which means its states have the structure of hypercubes, with direction over its edges inducing direction for cells of all dimensions.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{HDA_paths.png}
+    \caption{Paths in a HDA}
+    \label{fig:HDA_paths}
+\end{figure}
+
+In 2024 a Kleene theorem was found for these automata by Fahrenberg et. al. \cite{Fahr_2024}. Which proves the languages HDA define are exactly the rational subsumption-closed sets of finite interval pomsets.
 
 \newpage
 \section{Background}
@@ -324,25 +361,13 @@ Moreover, a Heyting algebra where the \emph{principle of excluded middle} holds,
     In the category $\mathrm{Set}$ where objects are sets and morphisms are functions, the subobject classifier is $\Omega = \mathbb{B} \defeq \{0,1\}$ and if $f = \id$ then $\chi_A$ is the characteristic map of the subset $A\subseteq X$.
 \end{example}
 
-\begin{lemma}[{\cite[Lemma.~1.6.6]{Elephant}}]\label{lem:exist-sub_class}
-    For any small category $C$, the functor category $[C, \mathrm{Set}]$ has a subobject classifier.
+\begin{lemma}
+    $\mathrm{sSet}$ has a subobject classifier $\Omega$ which has an internal Heyting algebra.
 \end{lemma}
-
-\begin{corollary}
-    $\mathrm{sSet}$ has a subobject classifier $\Omega$.
-\end{corollary}
 
 \begin{proof}
-    Given a category $C$, the presheaf category is the same as the functor category $[C^{op}, \mathrm{Set}]$. $\Delta$ is a small category (in this thesis we won't go into detail what exactly constitutes a small category), and therefore so is its dual. From \ref{lem:exist-sub_class} we find that $\mathrm{sSet} = [\Delta^{op}, \mathrm{Set}]$ has a subobject classifier $\Omega$.
+    From \cite[Lemma.~1.6.6]{Elephant} and \cite[Lemma.~1.6.3.ii]{Elephant}.
 \end{proof}
-
-\begin{lemma}[{\cite[Lemma.~1.6.3.ii]{Elephant}}]\label{lem:heyting}
-    If C is coherent, then $\Omega$ is an internal Heyting algebra.
-\end{lemma}
-
-\begin{corollary}
-    The subobject classifier $\Omega$ of $\mathrm{sSet}$ is an internal Heyting algebra.
-\end{corollary}
 
 \subsection{Coalgebras}
 In this thesis we primarily work with $F$-coalgebras, which we will introduce next, these are a special type of coalgebra which fits our use-case very well. A general definition therefore is not necessary as the definition of $F$-coalgebras is self-contained.
@@ -522,6 +547,91 @@ And we obtain $r'$ by taking over the original $r^G$ and `connecting through' fo
 \end{remark}
 
 This composition allows for a left identity $id_n$ namely $id_n = ((\{1,2,\dots,n\}, \varnothing), (\{i\})_{i\in n}, (\{i\})_{i\in n})$.
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}
+		\node [style={gra_point}, label={above:1}] (0) at (-1, 1.5) {};
+		\node [style={gra_point}, label={above:2}] (1) at (-1, 0) {};
+		\node [style={gra_point}, label={above:4}] (3) at (1, 1.5) {};
+		\node [style={int_point}] (5) at (-3, 1.5) {};
+		\node [style={int_point}] (6) at (-3, 0) {};
+		\node [style={int_point}] (7) at (-3, -1.75) {};
+		\node [style={int_point}] (8) at (3.75, 1.25) {};
+		\node [style={int_point}] (9) at (3.75, -1.25) {};
+		\node [style={gra_point}, label={above:6}] (10) at (1, -0.75) {};
+		\node [style={gra_point}, label={above:5}] (11) at (1, 0.5) {};
+		\node [style=invisible, label={above:a}] (12) at (0, 0) {};
+		\node [style=invisible, label={above:b}] (13) at (0, 1.5) {};
+		\node [style={gra_point}, label={above:3}] (14) at (0, -1.75) {};
+		\node [style={int_point}] (15) at (5.25, 1.25) {};
+		\node [style={int_point}] (16) at (5.25, -1.25) {};
+		\node [style={gra_point}, label={above:7}] (17) at (7, 1.25) {};
+		\node [style={gra_point}, label={above:8}] (18) at (7, 0) {};
+		\node [style={gra_point}, label={above:9}] (19) at (7, -1.25) {};
+		\node [style={gra_point}, label={above:10}] (20) at (9.25, 1.25) {};
+		\node [style={gra_point}, label={above:11}] (21) at (9, -1.25) {};
+		\node [style={int_point}] (22) at (10.75, 1.25) {};
+		\node [style={int_point}] (23) at (10.75, -1.25) {};
+		\node [style=invisible, label={above:c}] (24) at (8, 1.25) {};
+		\node [style=invisible, label={below:a}] (25) at (8, 0.5) {};
+		\node [style=invisible, label={above:b}] (26) at (8, -1.25) {};
+		\node [style=invisible, label={above:\seq}] (27) at (4.5, -0.5) {};
+		\node [style={gra_point}, label={above:1}] (28) at (1.75, -3.5) {};
+		\node [style={gra_point}, label={above:2}] (29) at (1.75, -5) {};
+		\node [style={int_point}] (31) at (-0.25, -3.5) {};
+		\node [style={int_point}] (32) at (-0.25, -5) {};
+		\node [style={int_point}] (33) at (-0.25, -6.5) {};
+		\node [style={gra_point}, label={above:5}] (37) at (4.25, -4.25) {};
+		\node [style=invisible, label={above:a}] (38) at (3.25, -5) {};
+		\node [style=invisible, label={above:b}] (39) at (3.5, -3.5) {};
+		\node [style={gra_point}, label={above:7}] (43) at (5.5, -3.5) {};
+		\node [style={gra_point}, label={above:8}] (44) at (5.5, -5) {};
+		\node [style={gra_point}, label={above:9}] (45) at (5.5, -6.25) {};
+		\node [style={gra_point}, label={above:10}] (46) at (7.5, -3.5) {};
+		\node [style={gra_point}, label={above:11}] (47) at (7.5, -6.25) {};
+		\node [style={int_point}] (48) at (9.25, -3.5) {};
+		\node [style={int_point}] (49) at (9.25, -6.25) {};
+		\node [style=invisible, label={above:c}] (50) at (6.5, -3.5) {};
+		\node [style=invisible, label={below:a}] (51) at (6.25, -4.5) {};
+		\node [style=invisible, label={above:b}] (52) at (6.5, -6.25) {};
+		\node [style=invisible, label={above:=}] (53) at (-2, -5.5) {};
+		\draw [style={int_edge}] (5) to (0);
+		\draw (1) to (12.center);
+		\draw [style={int_edge}] (7) to (14);
+		\draw [style={int_edge}] (6) to (1);
+		\draw [style={int_edge}] (9) to (14);
+		\draw [style={int_edge}] (9) to (10);
+		\draw [style={int_edge}] (8) to (3);
+		\draw [style={gra_edge}] (0) to (3);
+		\draw [style={gra_edge}] (12.center) to (11);
+		\draw [style={gra_edge}] (12.center) to (10);
+		\draw [style={int_edge}] (15) to (17);
+		\draw [style={int_edge}] (16) to (18);
+		\draw [style={int_edge}] (16) to (19);
+		\draw [style={gra_edge}] (18) to (20);
+		\draw [style={gra_edge}] (17) to (20);
+		\draw [style={gra_edge}] (19) to (21);
+		\draw [style={int_edge}] (22) to (20);
+		\draw [style={int_edge}] (23) to (21);
+		\draw [style={int_edge}] (31) to (28);
+		\draw (29) to (38.center);
+		\draw [style={int_edge}] (32) to (29);
+		\draw [style={gra_edge}] (28) to (43);
+		\draw [style={gra_edge}] (38.center) to (37);
+		\draw [style={gra_edge}] (44) to (46);
+		\draw [style={gra_edge}] (43) to (46);
+		\draw [style={gra_edge}] (45) to (47);
+		\draw [style={int_edge}] (48) to (46);
+		\draw [style={int_edge}] (49) to (47);
+		\draw [style={int_edge}, bend right] (33) to (44);
+		\draw [style={int_edge}, bend right=15, looseness=1.25] (33) to (45);
+		\draw [style={gra_edge}] (38.center) to (44);
+		\draw [style={gra_edge}] (38.center) to (45);
+    \end{tikzpicture}
+    \caption{The composition of two ranked hypergraphs}
+    \label{fig:enter-label}
+\end{figure}
 
 \begin{lemma}\label{lem:psieq}
     Let $G,K,F$ be DAH and $U\subseteq V^G$ a set of vertices, it holds that:
@@ -997,7 +1107,6 @@ To formalise this we define a behaviour function.
 \end{definition}
 
 \newpage
-\section{Related Work}\label{relatedwork}
 
 \section{Conclusions and Further Research}\label{conclusions}
 

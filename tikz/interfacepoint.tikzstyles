@@ -7,6 +7,7 @@
 \tikzstyle{int_point}=[fill=white, draw=black, shape=circle]
 \tikzstyle{gra_point}=[fill=black, draw=black, shape=circle, minimum size=4pt, inner sep=0]
 \tikzstyle{labelled_node}=[fill=white, draw=black, shape=circle]
+\tikzstyle{invisible}=[fill=none, draw=none, shape=circle]
 
 % Edge styles
 \tikzstyle{int_edge}=[->, fill=none, draw=red]

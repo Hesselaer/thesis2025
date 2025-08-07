@@ -101,11 +101,19 @@
 \include{titlepage.tex}
 \begin{abstract}
 \noindent
-We introduce ranked hypergraphs which give dependency hypergraphs interfaces, this results in associative sequential composition. We prove these graphs have as generator the graphs of depth 1. Putting these graphs in a simplicial context allows us to 
+Regular expressions give an easy way to express regular languages, and through Kleene's theorem we know the regular languages they describe are exactly equal to the ones modelled by deterministic finite automata. These automata give a very efficient way to parse strings, search through data, check for patterns etc. But these regular languages only contain strings of characters, given by sequential composition. In practice machines, software, biology, and other forms of data exhibit concurrent behaviour. Such as parallel computing, manufacturing with multiple steps which aren't directly dependent, or cellular activity in organisms.
+
+In contrast to regular languages, a model for these concurrent languages, together with expressions, hasn't been found yet. Previous attempts have been made but they haven't been as useful as wanted. We think the main problem with the previous approaches have been the conflation of structure with behaviour, transitions in the model were restricted by the form of the state space.
+
+For this problem we first propose a new type of dependency graph called ranked hypergraphs. These are directed acyclic hypergraphs which have root and output interfaces that give control over dependencies and the defined sequential composition is associative up to isomorphism.
+
+Because of the interfaces there is a generator of graphs of depth 1. Which means that in these graphs there isn't a path longer than 1 edge. We can inductively split up any graph into these pieces, which lets them serve as building blocks for all ranked hypergraphs.
+
+As structure for these graphs we define a simplicial set containing them. Finally, a coalgebra is used to define a transition and acceptance system for these states, mirroring classical automata by splitting up graphs into their building blocks.
 \end{abstract}
 
 \bigskip
-
+\newpage
 \thispagestyle{empty}
 \tableofcontents
 \thispagestyle{empty}
@@ -126,10 +134,9 @@ The generator allows for piece-by-piece parsing of a graph. Mirroring how finite
 
 We will first introduce the necessary background on simplicial sets, subobject identifiers and coalgebras. We then formalize ranked hypergraphs and their compositions, describe the simplicial structure, and finally define the coalgebraic behaviour function which gives the parsing semantics.
 
-\newpage
-\section{Related Work}
+\subsection{Related Work}
 
-\subsection{Interface pomsets}
+\paragraph{Interface pomsets}
 In regular automata we work with single characters, which when sequentially composed build the words of languages. But in concurrent settings we need actions which have multiple events which can be parallel, dependent, weakly dependent, etcetera. But to be useful to use they also need a structure that allows composition, and most ideally a generator.
 
 For this, interface pomsets were introduced \cite{ipomsets2024}. 
@@ -152,7 +159,7 @@ The generator of these ipomsets consists of graphs of discrete ($< = \varnothing
 
 The concept of discreteness in the generator elements inspired the generator of ranked hypergraphs, described in theorem \ref{thm_generator}.
 
-\subsection{Higher Dimensional Automata}
+\paragraph{Higher Dimensional Automata}
 A tried model for concurrent languages are Higher Dimensional Automata (HDA), first introduced in 1991 by Pratt and van Glabbeek \cite{Pra91, vG91}. An HDA is a \emph{precubical set} with start and end points. Which means its states have the structure of hypercubes, with direction over its edges inducing direction for cells of all dimensions.
 \begin{figure}[H]
     \centering
@@ -165,6 +172,74 @@ In 2024 a Kleene theorem was found for these automata by Fahrenberg et. al. \cit
 
 \newpage
 \section{Background}
+\subsection{Preliminaries}
+This thesis assumes basic knowledge of and experience with automata theory and category theory. A good starting point for automata would be chapters 2-3 of \emph{Introduction to Languages and the Theory of Computation} by John C. Martin \cite{Martin_2011}.
+
+\subsection{Semilattices}
+\begin{definition}
+    Let $P$ be a partially ordered set (poset), the join (or least upper bound) is a binary operator $\vee$ such that for all $x,y,z\in P$:
+    \begin{itemize}
+        \item $x\leq x\vee y$
+        \item if $x\leq a$ and $y\leq a$ then $x\vee y\leq a$
+    \end{itemize}
+
+    the meet (or greatest lower bound) is a binary operator $\wedge$ such that for all $x,y,z\in P$:
+        \begin{itemize}
+        \item $x\wedge y\leq x$
+        \item if $z\leq x$ and $z\leq y$ then $z\leq x\wedge y$
+    \end{itemize}
+\end{definition}
+
+\begin{definition}
+    A \emph{join-semilattice} is a triple $(A, \vee, \bot)$ consisting of
+    \begin{itemize}
+        \item A partially ordered set $A$
+        \item A binary join $\vee: A\times A \to A$ which is commutative, associative, and idempotent: $a\vee a = a$
+        \item A unit $\bot$ such that $a \vee\bot = a$
+    \end{itemize}
+
+    The collection of all join-semilattices forms a category JSL.
+
+    A \emph{meet-semilattice} is the same as a join-semilattice, except we have as operator a meet instead of a join.
+
+    An object that is both a meet-, and a join-semilattice is called a \emph{lattice}. 
+\end{definition}
+
+\begin{definition}
+    Let $X$ be a set. Let $\finP(X)$ be the set of finite subsets of $X$, then $(\finP(X), \cup, \varnothing)$ is a JSL.
+\end{definition}
+
+\begin{definition}
+    The free join-semilattice on a set $X$ is the unique JSL $F(X)$ together with a function $\eta: X\to F(X)$ such that for all $A\in\JSL$, $f: X \to A$ there exists a unique JSL morphism $\hat{f}: F(X)\to A$ such that the following diagram commutes:
+    \begin{center}
+        \begin{tikzcd}
+              X \arrow[d,"\eta"]\arrow[r,"f"] & A  \\
+              F(X) \arrow[ur, swap, "\hat{f}"]
+        \end{tikzcd}
+    \end{center}
+\end{definition}
+
+This definition is a special case of the more general notion of a free object \cite{nlab:free_object}.
+
+\begin{lemma}\label{lem:free_jsl}
+    Let $X\in \Set$, $\finP(X)$ is the free JSL on $X$.
+\end{lemma}
+
+\begin{proof}
+    Take $\eta(x) = \{x\}$. Let $A$ be a join-semilattice, $f: X \to A$ a function and let $\hat{f}(\{x_1, \dots, x_n\}) = f(x_1)\vee \dots \vee f(x_n)$.\
+
+    Then $(\hat{f}\circ \eta)(x) = \hat{f}(\{x\}) = f(x)$. And thus the finite powerset is the unique free JSL.
+\end{proof}
+
+\begin{definition}
+    A Heyting algebra H is a lattice together with the operation of implication $\Rightarrow: H\times H \to H$ which for all $x,y,z\in H$ satisfies:
+    \[
+        x\wedge y \leq z \iff x\leq y\Rightarrow z
+    \]
+\end{definition}
+
+Moreover, a Heyting algebra where the \emph{principle of excluded middle} holds, which states every proposition is either true or false, is a Boolean algebra. When writing $\vdash$ for $\leq$ you get precisely the classical notion of propositional logic.
+
 \subsection{Presheaves}
 \begin{definition}
     Let $C$,$D$ be categories, and $F,G: C\to D$ be functors. Then a \emph{natural transformation} $\mu: F\Rightarrow G$ from $F$ to $G$ is a family of morphisms such that:
@@ -251,71 +326,6 @@ In 2024 a Kleene theorem was found for these automata by Fahrenberg et. al. \cit
 \begin{proof}
     Given that $\delta_i$, $\sigma_i$ generate the morphisms in $\Delta$, diagram \ref{eq:nat-trans} automatically commutes for all $f$ if it does so for $\delta$ and $\sigma$.
 \end{proof}
-
-\subsection{Semilattices}
-\begin{definition}
-    Let $P$ be a partially ordered set (poset), the join (or least upper bound) is a binary operator $\vee$ such that for all $x,y,z\in P$:
-    \begin{itemize}
-        \item $x\leq x\vee y$
-        \item if $x\leq a$ and $y\leq a$ then $x\vee y\leq a$
-    \end{itemize}
-
-    the meet (or greatest lower bound) is a binary operator $\wedge$ such that for all $x,y,z\in P$:
-        \begin{itemize}
-        \item $x\wedge y\leq x$
-        \item if $z\leq x$ and $z\leq y$ then $z\leq x\wedge y$
-    \end{itemize}
-\end{definition}
-
-\begin{definition}
-    A \emph{join-semilattice} is a triple $(A, \vee, \bot)$ consisting of
-    \begin{itemize}
-        \item A partially ordered set $A$
-        \item A binary join $\vee: A\times A \to A$ which is commutative, associative, and idempotent: $a\vee a = a$
-        \item A unit $\bot$ such that $a \vee\bot = a$
-    \end{itemize}
-
-    The collection of all join-semilattices forms a category JSL.
-
-    A \emph{meet-semilattice} is the same as a join-semilattice, except we have as operator a meet instead of a join.
-
-    An object that is both a meet-, and a join-semilattice is called a \emph{lattice}. 
-\end{definition}
-
-\begin{definition}
-    Let $X$ be a set. Let $\finP(X)$ be the set of finite subsets of $X$, then $(\finP(X), \cup, \varnothing)$ is a JSL.
-\end{definition}
-
-\begin{definition}
-    The free join-semilattice on a set $X$ is the unique JSL $F(X)$ together with a function $\eta: X\to F(X)$ such that for all $A\in\JSL$, $f: X \to A$ there exists a unique JSL morphism $\hat{f}: F(X)\to A$ such that the following diagram commutes:
-    \begin{center}
-        \begin{tikzcd}
-              X \arrow[d,"\eta"]\arrow[r,"f"] & A  \\
-              F(X) \arrow[ur, swap, "\hat{f}"]
-        \end{tikzcd}
-    \end{center}
-\end{definition}
-
-This definition is a special case of the more general notion of a free object \cite{nlab:free_object}.
-
-\begin{lemma}\label{lem:free_jsl}
-    Let $X\in \Set$, $\finP(X)$ is the free JSL on $X$.
-\end{lemma}
-
-\begin{proof}
-    Take $\eta(x) = \{x\}$. Let $A$ be a join-semilattice, $f: X \to A$ a function and let $\hat{f}(\{x_1, \dots, x_n\}) = f(x_1)\vee \dots \vee f(x_n)$.\
-
-    Then $(\hat{f}\circ \eta)(x) = \hat{f}(\{x\}) = f(x)$. And thus the finite powerset is the unique free JSL.
-\end{proof}
-
-\begin{definition}
-    A Heyting algebra H is a lattice together with the operation of implication $\Rightarrow: H\times H \to H$ which for all $x,y,z\in H$ satisfies:
-    \[
-        x\wedge y \leq z \iff x\leq y\Rightarrow z
-    \]
-\end{definition}
-
-Moreover, a Heyting algebra where the \emph{principle of excluded middle} holds, which states every proposition is either true or false, is a Boolean algebra. When writing $\vdash$ for $\leq$ you get precisely the classical notion of propositional logic.
 
 \subsection{Subobject Classifiers}
 \begin{definition}

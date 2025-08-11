@@ -20,7 +20,10 @@
 \usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{theoremref}
+%\usepackage{cleveref}
 \usepackage{float}
+
+\usepackage{doi}
 
 \makeatletter
 \renewcommand{\th@definition}{%
@@ -39,6 +42,7 @@
 
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{prop}[theorem]{Proposition}
 \newtheorem{corollary}[theorem]{Corollary}
 
 \theoremstyle{definition}
@@ -53,7 +57,6 @@
 \usepackage{mathtools}
 \usepackage{mathdots}
 \usepackage{stmaryrd}
-%\usepackage[hidelinks]{hyperref}
 \newcommand{\defeq}{\vcentcolon=}
 \newcommand{\eqdef}{=\vcentcolon}
 
@@ -124,7 +127,7 @@ As structure for these graphs we define a simplicial set containing them. Finall
 \section{Introduction} \label{introduction}
 Finite automata and regular languages form the foundation of classical formal language theory. Deterministic finite automata (DFA) provide a simple and elegant model for accepting regular languages, with Kleene's theorem stating their equivalence to regular expressions. In this setting, words are sequential compositions from single letters in an alphabet, and state transitions are deterministic.
 
-However, many systems exhibit concurrent behaviour, where actions occur in parallel with complex dependencies. In a previous attempt to model this behaviour, higher-dimensional automata (HDA) were proposed. In HDA, concurrent actions are modelled using paths through hypercubes. But this combination of structure and behaviour is constricting and leads to just a small set of described languages.
+However, many systems exhibit concurrent behaviour, where actions occur in parallel with complex dependencies. In a previous attempt to model this behaviour, higher-dimensional automata (HDA) were proposed. In HDA, concurrent actions are modelled using paths through hypercubes. But this combination of structure and behaviour is constricting and leads to just a small set of described languages. The missing part in particular is a parallel equivalent to the Kleene star operation.
 
 In this thesis, we develop an approach to model concurrent regular languages which separates structure from behaviour: simplicial coalgebras over ranked hypergraphs. 
 
@@ -137,65 +140,98 @@ We will first introduce the necessary background on simplicial sets, subobject i
 \subsection{Related Work}
 
 \paragraph{Interface pomsets}
-In regular automata we work with single characters, which when sequentially composed build the words of languages. But in concurrent settings we need actions which have multiple events which can be parallel, dependent, weakly dependent, etcetera. But to be useful to use they also need a structure that allows composition, and most ideally a generator.
+In discrete finite automata (DFA) over an alphabet $\Sigma$ we work with single characters, which when sequentially composed build the words of languages. But in concurrent settings we need actions which have multiple events that can be parallel, dependent, weakly dependent, etcetera. But to be useful they also need a structure that allows composition, and most ideally a generator.
 
 For this, interface pomsets were introduced \cite{ipomsets2024}. 
 
-\begin{definition}
-    An \emph{ipomset} (over $\Sigma$) is a structure $(P, <, \dashrightarrow, S, T, \lambda)$ consisting of the following:
+\begin{definition}{\cite{ipomsets2024}}
+    An \emph{ipomset} (over an alphabet $\Sigma$) is a structure $(P, <, \dashrightarrow, S, T, \lambda)$ consisting of the following:
     \begin{itemize}
-        \item a finite set $P$ of \emph{events}
-        \item a strict partial order (i.e., asymmetric, transitive, irreflexive) $<\, \subseteq P\times P$ called the precedence order
-        \item a strict partial order $\dashrightarrow\,\subseteq P\times P$ called the \emph{event order}
-        \item a subset $S\subseteq P$ called the \emph{source set}
-        \item a subset $T\subseteq P$ called the \emph{target set}
-        \item a \emph{labelling} $\lambda: P\to \Sigma$
+        \item a finite set $P$ of \emph{events},
+        \item a strict partial order (i.e., asymmetric, transitive, irreflexive) $<\, \subseteq P\times P$ called the precedence order,
+        \item a strict partial order $\dashrightarrow\,\subseteq P\times P$ called the \emph{event order},
+        \item a subset $S\subseteq P$ called the \emph{source set} of \emph{sources},
+        \item a subset $T\subseteq P$ called the \emph{target set} of \emph{targets},
+        \item a \emph{labelling} map $\lambda: P\to \Sigma$.
     \end{itemize}
 \end{definition}
 
-Here the precedence order is the intuitive one: if $a<b$ then $a$ must end before $b$ begins. The event order is a weaker notion which is necessary for sequential composition. The source and target sets are also for composition: if $a\in S$ then we can 'go to' the given ipomset with event $a$ still ongoing. Similarly if $a\in T$ then we can 'leave' with $a$ still ongoing, presumably to another ipomset which has $a$ in its source set.
+Intuitively we understand the precedence order, if $a<b$ then $a$ must end before $b$ begins. The event order is a weaker notion which is necessary for sequential composition. The source and target sets are also used for composition, we can only \emph{glue} two ipomsets $P$ and $Q$ together if $T_P \cong S_Q$.
 
-The generator of these ipomsets consists of graphs of discrete ($< = \varnothing$) starters ($S = P$) and terminators ($T = P$).
+We identify a couple of important types of ipomsets. Namely, an ipomset $(P,<,\dashrightarrow, S, T, \lambda)$ is:
 
-The concept of discreteness in the generator elements inspired the generator of ranked hypergraphs, described in theorem \ref{thm_generator}.
+\begin{itemize}
+    \item \emph{discrete} if $<$ is empty,
+    \item a \emph{conclist} (short for `concurrency list') if it is discrete and $S=T=\varnothing$,
+    \item a \emph{starter} if it is discrete and $T = P$,
+    \item a \emph{terminator} if it is discrete and $S = P$, and
+    \item an \emph{identity} if it is both a starter and a terminator.
+\end{itemize}
+
+An \emph{isomorphism} of ipomsets $P$ and $Q$ is a bijection $f: P\to Q$ such that:
+\begin{enumerate}
+    \item $f(S_P) = S_Q$, $f(T_P) = T_Q$, $\lambda_Q\circ f = \lambda_P$,
+    \item $f(x) <_Q f(y) \iff x <_P y$, and
+    \item $x \nless_P y$ and $y\nless_P x$ imply that $x\dashrightarrow_P y \iff f(x)\dashrightarrow_Q f(y)$.
+\end{enumerate}
+
+\begin{prop}
+    Isomorphism classes of ipomsets form a category $\mathrm{iiPoms}_{\simeq}$.
+    \begin{itemize}
+        \item objects are isomorphism classes of conclists,
+        \item morphisms in $\mathrm{iiPoms}_{\simeq}(U,V)$ are isomorphism classes of ipomsets $P$ with $S_P = U$ and $T_P = V$,
+        \item composition of morphisms is gluing, and
+        \item identities are identity ipomsets, i.e. $(U, \varnothing, \dashrightarrow, U, U, \lambda)\in\mathrm{iiPoms}_{\simeq}(U,U)$.
+    \end{itemize}
+\end{prop}
+
+Finally, let $\mathit{\Bar{\Omega}_{\simeq}}$ be the directed multigraph given as follows:
+\begin{itemize}
+    \item Vertices are objects of $\mathrm{iiPoms}_{\simeq}$.
+    \item Edges in $\mathit{\Bar{\Omega}_{\simeq}}$ are morphisms in $\mathrm{iiPoms}_{\simeq}(U,V)$
+\end{itemize}
+
+\begin{corollary}[\cite{ipomsets2024}]
+    The category $\mathrm{iiPoms}_{\simeq}$ is generated by the directed multigraph $\mathit{\Bar{\Omega}_{\simeq}}$ using gluing composition under the identities \cite[equation. (2)]{ipomsets2024}.
+\end{corollary}
+
+The concept of discreteness in starters and terminators inspired the generator of ranked hypergraphs, described in \thref{thm_generator}. In our case, if an edge has a predecessor then the action of that predecessor has to happen first. No precedence order would therefore translate to all edges having no predecessors. Therefore giving directed graphs of depth 1.
 
 \paragraph{Higher Dimensional Automata}
-A tried model for concurrent languages are Higher Dimensional Automata (HDA), first introduced in 1991 by Pratt and van Glabbeek \cite{Pra91, vG91}. An HDA is a \emph{precubical set} with start and end points. Which means its states have the structure of hypercubes, with direction over its edges inducing direction for cells of all dimensions.
-\begin{figure}[H]
+Higher Dimensional Automata (HDA) have been proposed as an analogue of DFA for modelling concurrent languages \cite{Pra91, vG91}. An HDA is a \emph{precubical set} with start and end points. Which means its states have the structure of hypercubes, with direction over its edges inducing direction for cells of all dimensions.
+\begin{figure}[H]\label{fig:HDA_paths}
     \centering
     \includegraphics[width=0.5\linewidth]{HDA_paths.png}
     \caption{Paths in a HDA}
-    \label{fig:HDA_paths}
 \end{figure}
 
-In 2024 a Kleene theorem was found for these automata by Fahrenberg et. al. \cite{Fahr_2024}. Which proves the languages HDA define are exactly the rational subsumption-closed sets of finite interval pomsets.
-
+A Kleene theorem was found for these automata by Fahrenberg et. al. \cite{Fahr_2024} which proves the languages HDA define are exactly the rational subsumption-closed sets of finite interval pomsets. One of the limitations of this is that the rational operations used by Fahrenberg et. al. don't include a `parallel Kleene star' but only a binary (therefore finite) parallel composition. Thus severely restricting the description of concurrency by this class of languages.
 \newpage
 \section{Background}
 \subsection{Preliminaries}
-This thesis assumes basic knowledge of and experience with automata theory and category theory. A good starting point for automata would be chapters 2-3 of \emph{Introduction to Languages and the Theory of Computation} by John C. Martin \cite{Martin_2011}.
+This thesis assumes basic knowledge of and experience with automata theory and category theory. A good starting point for automata would be chapters 2-3 of \emph{Introduction to Languages and the Theory of Computation} by John C. Martin \cite{Martin_2011}. For category theory I would recommend the classic book \emph{Categories for the Working Mathematician} \cite{MacLane1998}.
 
 \subsection{Semilattices}
 \begin{definition}
-    Let $P$ be a partially ordered set (poset), the join (or least upper bound) is a binary operator $\vee$ such that for all $x,y,z\in P$:
+    Let $P$ be a partially ordered set (poset), the \emph{join} (or least upper bound) is a binary operator $\vee$ such that for all $x,y,z\in P$:
     \begin{itemize}
-        \item $x\leq x\vee y$
-        \item if $x\leq a$ and $y\leq a$ then $x\vee y\leq a$
+        \item $x\leq x\vee y$,
+        \item if $x\leq a$ and $y\leq a$ then $x\vee y\leq a$.
     \end{itemize}
 
-    the meet (or greatest lower bound) is a binary operator $\wedge$ such that for all $x,y,z\in P$:
+    the \emph{meet} (or greatest lower bound) is a binary operator $\wedge$ such that for all $x,y,z\in P$:
         \begin{itemize}
-        \item $x\wedge y\leq x$
-        \item if $z\leq x$ and $z\leq y$ then $z\leq x\wedge y$
+        \item $x\wedge y\leq x$,
+        \item if $z\leq x$ and $z\leq y$ then $z\leq x\wedge y$.
     \end{itemize}
 \end{definition}
 
 \begin{definition}
     A \emph{join-semilattice} is a triple $(A, \vee, \bot)$ consisting of
     \begin{itemize}
-        \item A partially ordered set $A$
-        \item A binary join $\vee: A\times A \to A$ which is commutative, associative, and idempotent: $a\vee a = a$
-        \item A unit $\bot$ such that $a \vee\bot = a$
+        \item A partially ordered set $A$,
+        \item A binary join $\vee: A\times A \to A$ which is commutative, associative, and idempotent: $a\vee a = a$,
+        \item A unit $\bot$ such that $a \vee\bot = a$.
     \end{itemize}
 
     The collection of all join-semilattices forms a category JSL.
@@ -219,9 +255,9 @@ This thesis assumes basic knowledge of and experience with automata theory and c
     \end{center}
 \end{definition}
 
-This definition is a special case of the more general notion of a free object \cite{nlab:free_object}.
+This definition is a special case of the more general notion of a free object \cite{joy_of_cats_2009}.
 
-\begin{lemma}\label{lem:free_jsl}
+\begin{lemma}\thlabel{lem:free_jsl}
     Let $X\in \Set$, $\finP(X)$ is the free JSL on $X$.
 \end{lemma}
 
@@ -445,14 +481,14 @@ A \emph{ranked hypergraph} $(g, r, o, \L, A)$ consists of:
 \emph{Notation:} In this thesis we refer to ranked hypergraphs as just hypergraphs as we will only be working with this kind. $HG(n,m)$ is the set of ranked term  hypergraphs of rank $(n,m)$
 
 \begin{example}
-    In figure \ref{fig:DAH-example} a ranked hypergraph is drawn. Left is the root interface, of rank 3, on the right is the output interface of rank 2. 
+    In figure \thref{fig:DAH-example} a ranked hypergraph is drawn. Left is the root interface, of rank 3, on the right is the output interface of rank 2. 
 
     The full definition of this graph is as follows
     \begin{itemize}
-        \item $V = \{1,2,3,4,5,6\}$
-        \item $H = \{(1, \{4\}), (2, \{5,6\})\}$
-        \item $r = (\{1\}, \{2\}, \{3\})$, $o = (\{4\}, \{3,6\})$
-        \item $A = \{a,b\}$, $\L((1, \{4\})) = b$, $\L((2, \{5,6\})) = a$
+        \item $V = \{1,2,3,4,5,6\}$,
+        \item $H = \{(1, \{4\}), (2, \{5,6\})\}$,
+        \item $r = (\{1\}, \{2\}, \{3\})$, $o = (\{4\}, \{3,6\})$,
+        \item $A = \{a,b\}$, $\L((1, \{4\})) = b$, $\L((2, \{5,6\})) = a$.
     \end{itemize}
     
     \begin{figure}[h]
@@ -483,11 +519,11 @@ A \emph{ranked hypergraph} $(g, r, o, \L, A)$ consists of:
 		\draw [style={gra_edge}] (12.center) to (10);
     \end{tikzpicture}
     \caption{A Directed Acyclic Hypergraph}
-    \label{fig:DAH-example}
+    \thlabel{fig:DAH-example}
 \end{figure}
 \end{example} % ranked hypergraph
 
-\begin{definition}\label{def_isomorphism}
+\begin{definition}\thlabel{def_isomorphism}
 Let $G$ and $H$ be ranked hypergraphs of equal rank $(n,m)$,
 
 An \emph{isomorphism} between $G$ and $F$ is a bijection
@@ -508,12 +544,12 @@ such that
 \]
 \end{definition} % ranked hypergraph isomorphism
 
-\begin{remark}\label{rem_rename}
-    When proving a property which involves multiple hypergraphs, we can assume disjointness of vertex sets. But then the property will only hold up to isomorphism. This is because renaming of vertices is an isomorphism in the sense of definition \ref{def_isomorphism}.
+\begin{remark}\thlabel{rem_rename}
+    When proving a property which involves multiple hypergraphs, we can assume disjointness of vertex sets. But then the property will only hold up to isomorphism. This is because renaming of vertices is an isomorphism in the sense of \thref{def_isomorphism}.
 \end{remark}
 
 \subsection{Composition of ranked hypergraphs}
-\begin{definition}\label{def_seq_comp}
+\begin{definition}\thlabel{def_seq_comp}
 Let $G, F$ be hypergraphs such that $|o^G| = |r^F|$, their composition is defined as follows:
 \begin{align}
     G\seq F = (g', r', i_F[o^F] \defeq (i_F[o_i^F])_{i\leq |o^F|}, \L^G\sqcup \L^F, A^G\cup A^F)
@@ -550,100 +586,103 @@ And we obtain $r'$ by taking over the original $r^G$ and `connecting through' fo
 \begin{align*}
     r'_i = \Psi_{G, F}(r^G_i)
 \end{align*}
-\end{definition} % seq composition
+\end{definition}
 
-\begin{remark}\label{rem_disj_seq_comp}
+\begin{remark}\thlabel{rem_disj_seq_comp}
     When vertex sets are disjoint, we can simply take set union as coproduct. Which makes the inclusions identity maps.
 \end{remark}
 
 This composition allows for a left identity $id_n$ namely $id_n = ((\{1,2,\dots,n\}, \varnothing), (\{i\})_{i\in n}, (\{i\})_{i\in n})$.
 
-\begin{figure}
-    \centering
-    \begin{tikzpicture}
-		\node [style={gra_point}, label={above:1}] (0) at (-1, 1.5) {};
-		\node [style={gra_point}, label={above:2}] (1) at (-1, 0) {};
-		\node [style={gra_point}, label={above:4}] (3) at (1, 1.5) {};
-		\node [style={int_point}] (5) at (-3, 1.5) {};
-		\node [style={int_point}] (6) at (-3, 0) {};
-		\node [style={int_point}] (7) at (-3, -1.75) {};
-		\node [style={int_point}] (8) at (3.75, 1.25) {};
-		\node [style={int_point}] (9) at (3.75, -1.25) {};
-		\node [style={gra_point}, label={above:6}] (10) at (1, -0.75) {};
-		\node [style={gra_point}, label={above:5}] (11) at (1, 0.5) {};
-		\node [style=invisible, label={above:a}] (12) at (0, 0) {};
-		\node [style=invisible, label={above:b}] (13) at (0, 1.5) {};
-		\node [style={gra_point}, label={above:3}] (14) at (0, -1.75) {};
-		\node [style={int_point}] (15) at (5.25, 1.25) {};
-		\node [style={int_point}] (16) at (5.25, -1.25) {};
-		\node [style={gra_point}, label={above:7}] (17) at (7, 1.25) {};
-		\node [style={gra_point}, label={above:8}] (18) at (7, 0) {};
-		\node [style={gra_point}, label={above:9}] (19) at (7, -1.25) {};
-		\node [style={gra_point}, label={above:10}] (20) at (9.25, 1.25) {};
-		\node [style={gra_point}, label={above:11}] (21) at (9, -1.25) {};
-		\node [style={int_point}] (22) at (10.75, 1.25) {};
-		\node [style={int_point}] (23) at (10.75, -1.25) {};
-		\node [style=invisible, label={above:c}] (24) at (8, 1.25) {};
-		\node [style=invisible, label={below:a}] (25) at (8, 0.5) {};
-		\node [style=invisible, label={above:b}] (26) at (8, -1.25) {};
-		\node [style=invisible, label={above:\seq}] (27) at (4.5, -0.5) {};
-		\node [style={gra_point}, label={above:1}] (28) at (1.75, -3.5) {};
-		\node [style={gra_point}, label={above:2}] (29) at (1.75, -5) {};
-		\node [style={int_point}] (31) at (-0.25, -3.5) {};
-		\node [style={int_point}] (32) at (-0.25, -5) {};
-		\node [style={int_point}] (33) at (-0.25, -6.5) {};
-		\node [style={gra_point}, label={above:5}] (37) at (4.25, -4.25) {};
-		\node [style=invisible, label={above:a}] (38) at (3.25, -5) {};
-		\node [style=invisible, label={above:b}] (39) at (3.5, -3.5) {};
-		\node [style={gra_point}, label={above:7}] (43) at (5.5, -3.5) {};
-		\node [style={gra_point}, label={above:8}] (44) at (5.5, -5) {};
-		\node [style={gra_point}, label={above:9}] (45) at (5.5, -6.25) {};
-		\node [style={gra_point}, label={above:10}] (46) at (7.5, -3.5) {};
-		\node [style={gra_point}, label={above:11}] (47) at (7.5, -6.25) {};
-		\node [style={int_point}] (48) at (9.25, -3.5) {};
-		\node [style={int_point}] (49) at (9.25, -6.25) {};
-		\node [style=invisible, label={above:c}] (50) at (6.5, -3.5) {};
-		\node [style=invisible, label={below:a}] (51) at (6.25, -4.5) {};
-		\node [style=invisible, label={above:b}] (52) at (6.5, -6.25) {};
-		\node [style=invisible, label={above:=}] (53) at (-2, -5.5) {};
-		\draw [style={int_edge}] (5) to (0);
-		\draw (1) to (12.center);
-		\draw [style={int_edge}] (7) to (14);
-		\draw [style={int_edge}] (6) to (1);
-		\draw [style={int_edge}] (9) to (14);
-		\draw [style={int_edge}] (9) to (10);
-		\draw [style={int_edge}] (8) to (3);
-		\draw [style={gra_edge}] (0) to (3);
-		\draw [style={gra_edge}] (12.center) to (11);
-		\draw [style={gra_edge}] (12.center) to (10);
-		\draw [style={int_edge}] (15) to (17);
-		\draw [style={int_edge}] (16) to (18);
-		\draw [style={int_edge}] (16) to (19);
-		\draw [style={gra_edge}] (18) to (20);
-		\draw [style={gra_edge}] (17) to (20);
-		\draw [style={gra_edge}] (19) to (21);
-		\draw [style={int_edge}] (22) to (20);
-		\draw [style={int_edge}] (23) to (21);
-		\draw [style={int_edge}] (31) to (28);
-		\draw (29) to (38.center);
-		\draw [style={int_edge}] (32) to (29);
-		\draw [style={gra_edge}] (28) to (43);
-		\draw [style={gra_edge}] (38.center) to (37);
-		\draw [style={gra_edge}] (44) to (46);
-		\draw [style={gra_edge}] (43) to (46);
-		\draw [style={gra_edge}] (45) to (47);
-		\draw [style={int_edge}] (48) to (46);
-		\draw [style={int_edge}] (49) to (47);
-		\draw [style={int_edge}, bend right] (33) to (44);
-		\draw [style={int_edge}, bend right=15, looseness=1.25] (33) to (45);
-		\draw [style={gra_edge}] (38.center) to (44);
-		\draw [style={gra_edge}] (38.center) to (45);
-    \end{tikzpicture}
-    \caption{The composition of two ranked hypergraphs}
-    \label{fig:enter-label}
-\end{figure}
+\begin{example}
+    Figure \ref{fig:composition} shows the sequential composition $G\seq F$. In this example it is visible that interface points give a handle on dependencies. For instance, as $4\in o_G$, and $7\in r_F$, in the final product $7$ is dependent on action $b$,
+    \begin{figure}[H]
+        \centering
+        \begin{tikzpicture}
+    		\node [style={gra_point}, label={above:1}] (0) at (-1, 1.5) {};
+    		\node [style={gra_point}, label={above:2}] (1) at (-1, 0) {};
+    		\node [style={gra_point}, label={above:4}] (3) at (1, 1.5) {};
+    		\node [style={int_point}] (5) at (-3, 1.5) {};
+    		\node [style={int_point}] (6) at (-3, 0) {};
+    		\node [style={int_point}] (7) at (-3, -1.75) {};
+    		\node [style={int_point}] (8) at (3.75, 1.25) {};
+    		\node [style={int_point}] (9) at (3.75, -1.25) {};
+    		\node [style={gra_point}, label={above:6}] (10) at (1, -0.75) {};
+    		\node [style={gra_point}, label={above:5}] (11) at (1, 0.5) {};
+    		\node [style=invisible, label={above:a}] (12) at (0, 0) {};
+    		\node [style=invisible, label={above:b}] (13) at (0, 1.5) {};
+    		\node [style={gra_point}, label={above:3}] (14) at (0, -1.75) {};
+    		\node [style={int_point}] (15) at (5.25, 1.25) {};
+    		\node [style={int_point}] (16) at (5.25, -1.25) {};
+    		\node [style={gra_point}, label={above:7}] (17) at (7, 1.25) {};
+    		\node [style={gra_point}, label={above:8}] (18) at (7, 0) {};
+    		\node [style={gra_point}, label={above:9}] (19) at (7, -1.25) {};
+    		\node [style={gra_point}, label={above:10}] (20) at (9.25, 1.25) {};
+    		\node [style={gra_point}, label={above:11}] (21) at (9, -1.25) {};
+    		\node [style={int_point}] (22) at (10.75, 1.25) {};
+    		\node [style={int_point}] (23) at (10.75, -1.25) {};
+    		\node [style=invisible, label={above:c}] (24) at (8, 1.25) {};
+    		\node [style=invisible, label={below:a}] (25) at (8, 0.5) {};
+    		\node [style=invisible, label={above:b}] (26) at (8, -1.25) {};
+    		\node [style=invisible, label={above:\seq}] (27) at (4.5, -0.5) {};
+    		\node [style={gra_point}, label={above:1}] (28) at (1.75, -3.5) {};
+    		\node [style={gra_point}, label={above:2}] (29) at (1.75, -5) {};
+    		\node [style={int_point}] (31) at (-0.25, -3.5) {};
+    		\node [style={int_point}] (32) at (-0.25, -5) {};
+    		\node [style={int_point}] (33) at (-0.25, -6.5) {};
+    		\node [style={gra_point}, label={above:5}] (37) at (4.25, -4.25) {};
+    		\node [style=invisible, label={above:a}] (38) at (3.25, -5) {};
+    		\node [style=invisible, label={above:b}] (39) at (3.5, -3.5) {};
+    		\node [style={gra_point}, label={above:7}] (43) at (5.5, -3.5) {};
+    		\node [style={gra_point}, label={above:8}] (44) at (5.5, -5) {};
+    		\node [style={gra_point}, label={above:9}] (45) at (5.5, -6.25) {};
+    		\node [style={gra_point}, label={above:10}] (46) at (7.5, -3.5) {};
+    		\node [style={gra_point}, label={above:11}] (47) at (7.5, -6.25) {};
+    		\node [style={int_point}] (48) at (9.25, -3.5) {};
+    		\node [style={int_point}] (49) at (9.25, -6.25) {};
+    		\node [style=invisible, label={above:c}] (50) at (6.5, -3.5) {};
+    		\node [style=invisible, label={below:a}] (51) at (6.25, -4.5) {};
+    		\node [style=invisible, label={above:b}] (52) at (6.5, -6.25) {};
+    		\node [style=invisible, label={above:=}] (53) at (-2, -5.5) {};
+    		\draw [style={int_edge}] (5) to (0);
+    		\draw (1) to (12.center);
+    		\draw [style={int_edge}] (7) to (14);
+    		\draw [style={int_edge}] (6) to (1);
+    		\draw [style={int_edge}] (9) to (14);
+    		\draw [style={int_edge}] (9) to (10);
+    		\draw [style={int_edge}] (8) to (3);
+    		\draw [style={gra_edge}] (0) to (3);
+    		\draw [style={gra_edge}] (12.center) to (11);
+    		\draw [style={gra_edge}] (12.center) to (10);
+    		\draw [style={int_edge}] (15) to (17);
+    		\draw [style={int_edge}] (16) to (18);
+    		\draw [style={int_edge}] (16) to (19);
+    		\draw [style={gra_edge}] (18) to (20);
+    		\draw [style={gra_edge}] (17) to (20);
+    		\draw [style={gra_edge}] (19) to (21);
+    		\draw [style={int_edge}] (22) to (20);
+    		\draw [style={int_edge}] (23) to (21);
+    		\draw [style={int_edge}] (31) to (28);
+    		\draw (29) to (38.center);
+    		\draw [style={int_edge}] (32) to (29);
+    		\draw [style={gra_edge}] (28) to (43);
+    		\draw [style={gra_edge}] (38.center) to (37);
+    		\draw [style={gra_edge}] (44) to (46);
+    		\draw [style={gra_edge}] (43) to (46);
+    		\draw [style={gra_edge}] (45) to (47);
+    		\draw [style={int_edge}] (48) to (46);
+    		\draw [style={int_edge}] (49) to (47);
+    		\draw [style={int_edge}, bend right] (33) to (44);
+    		\draw [style={int_edge}, bend right=15, looseness=1.25] (33) to (45);
+    		\draw [style={gra_edge}] (38.center) to (44);
+    		\draw [style={gra_edge}] (38.center) to (45);
+        \end{tikzpicture}
+        \caption{The composition of two ranked hypergraphs}
+        \label{fig:composition}
+    \end{figure}
+\end{example}
 
-\begin{lemma}\label{lem:psieq}
+\begin{lemma}\thlabel{lem:psieq}
     Let $G,K,F$ be DAH and $U\subseteq V^G$ a set of vertices, it holds that:
     \[
         \Psi_{G;K, F}\circ \Psi_{G, K}(U) \cong \Psi_{G, F;K}(U)
@@ -680,10 +719,10 @@ We prove the lemma for a singleton, this then extends trivially to all subsets $
         \Psi_{K,F}\circ \Psi_{G, K}(U) = \Psi_{G,K;F}(U)
     \]
 
-    By remark \ref{rem_rename} the equality holds up to isomorphism for all $G,K,F$, regardless of vertex sets.
+    By \thref{rem_rename} the equality holds up to isomorphism for all $G,K,F$, regardless of vertex sets.
 \end{proof}
 
-\begin{theorem}\label{thm:assoc}
+\begin{theorem}\thlabel{thm:assoc}
 Let G,K,F be ranked hypergraphs. The following properties hold:
     \begin{enumerate}
         \item $G\seq(K\seq F) \cong (G\seq K) \seq F$
@@ -692,10 +731,10 @@ Let G,K,F be ranked hypergraphs. The following properties hold:
 \end{theorem} % associativity
 
 \begin{proof}{$G\seq(K\seq F) \cong (G\seq K) \seq F$}\\
-    Let $G,K,F$ be ranked hypergraphs with disjoint vertex sets. Use remark \ref{rem_disj_seq_comp}. It is clear from the definition that $(G \seq K) \seq F = G \seq (K \seq F)$ if and only if their graphs and root interfaces are equal.
+    Let $G,K,F$ be ranked hypergraphs with disjoint vertex sets. Use \thref{rem_disj_seq_comp}. It is clear from the definition that $(G \seq K) \seq F = G \seq (K \seq F)$ if and only if their graphs and root interfaces are equal.
          
     Let $r$, $r'$ be the root interfaces for $(G \seq K) \seq F$, $G \seq (K \seq F)$ respectively.  
-    We expand the definition and use lemma \ref{lem:psieq} to show that $r = r'$. Let $i\leq |r^G|$, we get:
+    We expand the definition and use \thref{lem:psieq} to show that $r = r'$. Let $i\leq |r^G|$, we get:
     
     \begin{align*}
         r_i = \Psi_{r^F, o^k}(r^{G\seq K}_i) = \Psi_{r^F, o^k}(\Psi_{r^K, o^G}(r^G_i)) = \Psi_{r^{K\seq F}, o^G}(r_i) = r'_i\\
@@ -716,14 +755,14 @@ Let G,K,F be ranked hypergraphs. The following properties hold:
         H &= \left\{ \left(u, \Psi_{r^F, o^K}(U')\right) : (u, U') \in H^{G\seq K} \right\} \cup H^F\\
         &= \left\{ \left(u, \Psi_{r^F, o^K}(\Psi_{r^K, o^G}(U'))\right) : (u, U') \in H^G \right\}
         \cup \left\{ \left(u, \Psi_{r^F, o^K}(U')\right) : (u, U') \in H^K \right\} \cup H^F\\
-        \intertext{By lemma \ref{lem:psieq} we have}
+        \intertext{By \thref{lem:psieq} we have}
         &= \left\{ \left(u, \Psi_{r^{F\seq K}, o^G}(U')\right) : (u, U') \in H^G \right\}
         \cup \left\{ \left(u, \Psi_{r^F, o^K}(U')\right) : (u, U') \in H^K \right\} \cup H^F\\
         &= \left\{ \left(u, \Psi_{r^{K \seq F}, o^G}(U')\right) : (u, U') \in H^G \right\} \cup H^{K \seq F}\\
         &= H'
     \end{align*}
 
-    Which proves equality for disjoint graphs. Which in turn gives $G\seq(K\seq F) \cong (G\seq K) \seq F$ for any $G,K,F$ by using remark \ref{rem_rename}.
+    Which proves equality for disjoint graphs. Which in turn gives $G\seq(K\seq F) \cong (G\seq K) \seq F$ for any $G,K,F$ by using \thref{rem_rename}.
 \end{proof}
 
 \begin{proof}{$id_n \seq G \cong G$}\\
@@ -771,7 +810,7 @@ Let G,K,F be ranked hypergraphs. The following properties hold:
     \end{align*}
 \end{definition} % depth of hypergraph
 
-\begin{theorem}\label{thm_generator}
+\begin{theorem}\thlabel{thm_generator}
     The set of ranked hypergraphs is generated by the subset $$HG_1 \defeq \{G\in HG : D(G) \leq 1\}$$
 
     That is, for all $G\in HG$ there exists an $n\in \N_{\geq 1}$ and a sequence $(G_1, G_2, \dots, G_n)\in HG_1^n$, such that $G_1;G_2;\dots;G_n \cong G$
@@ -846,40 +885,42 @@ Let G,K,F be ranked hypergraphs. The following properties hold:
     By induction the statement holds for all $n$. Therefore $HG$ is generated by $HG_1$.
 \end{proof}
 
-\begin{definition}
-    Let $G,F$ be hypergraphs such that $|o^G| \leq |r^F|$ we extend the notion of the sequential composition given by \ref{def_seq_comp} to asymmetric graph compositions. Write 
-    \begin{align*}
-        G\seq^+ F = (g', r', o^F, \L^G\sqcup \L^F, A^G\cup A^F)
-    \end{align*}
+% \begin{definition}
+%     Let $G,F$ be hypergraphs such that $|o^G| \leq |r^F|$ we extend the notion of the sequential composition given by \ref{def_seq_comp} to asymmetric graph compositions. Write 
+%     \begin{align*}
+%         G\seq^+ F = (g', r', o^F, \L^G\sqcup \L^F, A^G\cup A^F)
+%     \end{align*}
 
-    for the extended composition.
+%     for the extended composition.
 
-    We obtain $g' = (V,H)$ by the following procedure:
+%     We obtain $g' = (V,H)$ by the following procedure:
 
-    \[
-        V \defeq (V^G + V^F) \setminus \bigcup_{i\leq |o^G|}o^G_i    
-    \]
+%     \[
+%         V \defeq (V^G + V^F) \setminus \bigcup_{i\leq |o^G|}o^G_i    
+%     \]
     
-    \[
-        H \defeq \left\{ \left(U, \Psi_{r^F, o^G}(U')\right) : (U, U') \in H^G \right\} \cup H^F
-    \]
+%     \[
+%         H \defeq \left\{ \left(U, \Psi_{r^F, o^G}(U')\right) : (U, U') \in H^G \right\} \cup H^F
+%     \]
 
-    And do the same as $\seq$ for the interfaces except for the excess ones which we just copy:
-    \[
-        r'_i = 
-        \begin{cases}
-            \Psi_{r^F, o^G}(r^G_i) & i\leq |o^G|\\
-            r^F_i & else
-        \end{cases}
-    \]
-\end{definition} % extended seq composition
+%     And do the same as $\seq$ for the interfaces except for the excess ones which we just copy:
+%     \[
+%         r'_i = 
+%         \begin{cases}
+%             \Psi_{r^F, o^G}(r^G_i) & i\leq |o^G|\\
+%             r^F_i & else
+%         \end{cases}
+%     \]
+% \end{definition} % extended seq composition
 
-By separation of cases we trivially extend theorem \ref{thm:assoc} to the following result:
-\begin{corollary}
-    $\seq^+$ is associative
-\end{corollary}
+% By separation of cases we trivially extend theorem \ref{thm:assoc} to the following result:
+% \begin{corollary}
+%     $\seq^+$ is associative
+% \end{corollary}
 \newpage
-\section{Simplicial set over ranked term graphs}
+\section{Simplicial sets over ranked term graphs}
+From this point on, the necessary structures are less certain. We would like to encode the concurrency into the dimensions of our state space, which makes behaviour more predictable as we can control when and where changes in dimension happen. There are multiple ways to do this, one of them would be to keep track of the amount of interfaces. This gives a handle on the amount of possible dependencies, composition etcetera, this is the approach chosen for \thref{def:interface_simp}. Another, which is easier to parse semantically would be to keep track of the depth of the graph. 
+
 \begin{definition}
     Let $V$ be the vertex set of a ranked hypergraph.\\
     We define the monoid $\M = (\P(V)^2, (\varnothing, \varnothing), \cup\times\cup)$. 
@@ -901,7 +942,7 @@ From this monoid we define a simplicial set using the nerve construction.
     \end{align*}
 \end{definition}
 
-\begin{definition}
+\begin{definition}\thlabel{def:interface_simp}
 Define the simplicial set $\H$ by $\H_n = HG(n,n)$. With face and degeneracy maps:
 \begin{align*}
     &d_i^{\H} ((g, (U_1, \dots, U_n), (W_1, W_2, \dots, W_n), \L, A))\\
@@ -968,7 +1009,7 @@ Define the simplicial set $\H$ by $\H_n = HG(n,n)$. With face and degeneracy map
 \section{Coalgebraic behaviour}
 To add behaviour to the hypergraph simplicial set we define pointed F-coalgebras by the endofunctor
 
-\begin{definition}\label{def_endofunc}
+\begin{definition}\thlabel{def_endofunc}
     \begin{align*}
         F: sSet \to sSet, \quad FX = \Omega \times \finP(X \sqcup \uparrow X)^{HG_1}
     \end{align*}
@@ -1118,14 +1159,9 @@ To formalise this we define a behaviour function.
 
 \newpage
 
-\section{Conclusions and Further Research}\label{conclusions}
+\section{Conclusions and Further Research}
 
-\bibliographystyle{alpha}
+\bibliographystyle{alphadin}
 \bibliography{bibliography}
 \addcontentsline{toc}{section}{References}
-
-
-%\appendix
-%appendices here --- if any
-
 \end{document}

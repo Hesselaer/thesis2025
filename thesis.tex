@@ -363,6 +363,12 @@ Moreover, a Heyting algebra where the \emph{principle of excluded middle} holds,
     Given that $\delta_i$, $\sigma_i$ generate the morphisms in $\Delta$, diagram \ref{eq:nat-trans} automatically commutes for all $f$ if it does so for $\delta$ and $\sigma$.
 \end{proof}
 
+\begin{definition}
+    Let $U$ be a poset, denote by $U^{\rhd}$ the poset $U$ with a new maximal element added. On $\Delta$ this gives $[n]^{\rhd} \cong [n+1]$. 
+
+    This gives a functor $\uparrow: \mathrm{sSet}\to \mathrm{sSet}$ by $\uparrow X = X\circ (-)^{\rhd}$. Then for $x\in X_n$ and $f:X\to \uparrow X$ we have $f(x)\in X_{n+1}$.
+\end{definition}
+
 \subsection{Subobject Classifiers}
 \begin{definition}
     Let $f, g$ be morphisms defined by
@@ -478,7 +484,7 @@ A \emph{ranked hypergraph} $(g, r, o, \L, A)$ consists of:
 \item An action set $A$ and a hyperarc labelling function $\L: H\to A$
 \end{itemize}
 \end{definition}
-\emph{Notation:} In this thesis we refer to ranked hypergraphs as just hypergraphs as we will only be working with this kind. $HG(n,m)$ is the set of ranked term  hypergraphs of rank $(n,m)$
+\emph{Notation:} In this thesis we often refer to ranked hypergraphs as just hypergraphs as we will only be working with this kind. $HG(n,m)$ is the set of ranked term hypergraphs of rank $(n,m)$
 
 \begin{example}
     In figure \thref{fig:DAH-example} a ranked hypergraph is drawn. Left is the root interface, of rank 3, on the right is the output interface of rank 2. 
@@ -524,7 +530,7 @@ A \emph{ranked hypergraph} $(g, r, o, \L, A)$ consists of:
 \end{example} % ranked hypergraph
 
 \begin{definition}\thlabel{def_isomorphism}
-Let $G$ and $H$ be ranked hypergraphs of equal rank $(n,m)$,
+Let $G,H\in HG(n,m)$ be ranked hypergraphs of equal rank $(n,m)$,
 
 An \emph{isomorphism} between $G$ and $F$ is a bijection
 \[
@@ -746,7 +752,7 @@ Let G,K,F be ranked hypergraphs. The following properties hold:
     \begin{gather*}
         V = (V^{G\seq K} + V^F) \setminus \bigcup_{i\leq |o^K|}o_i^K\\
         = (((V^G + V^K) \setminus \bigcup_{i\leq|o^G|}o^G_i) + V^F) \setminus \bigcup_{i\leq |o^K|}o_i^K
-        \intertext{From disjointness the inclusion of $V^G$, $V^K$, and $V^F$ into their coproduct we get}
+        \intertext{From disjointness of $V^G$, $V^K$, and $V^F$ we get}
         = (V^G + ((V^K + V^F) \setminus \bigcup_{i\leq|o^K|}o^K_i)) \setminus \bigcup_{i\leq|o^G|}o_i^G = V'
     \end{gather*}
 
@@ -1005,8 +1011,21 @@ Define the simplicial set $\H$ by $\H_n = HG(n,n)$. With face and degeneracy map
 
     Thus $\pi_n$ is a simplicial morphism. Therefore since $N(\M)$ is a simplicial set by definition the simplicial identities also hold for $d^{\H}$ and $s^{\H}$. Therefore $\H$ is a simplicial set.
 \end{proof}
+
+Note that for a given ranked hypergraph $G$ its underlying DAH $g$ is invariant under $d$ and $s$. This leads to the following result.
+
+\begin{corollary}
+    $\H^1 \defeq HG_1\cap \H$ is a subobject of $\H$. That is, $\H^1$ is a simplicial set with as face and degeneracy maps $d^{\H}$, respectively $s^{\H}$.
+\end{corollary}
+
+\begin{proof}
+    $d^{\H}$, $s^{\H}$ already satisfy the simplicial identities. All that remains to be proven is that $\H^1$ is closed under them. Let $G\in \H^1_n$, then $F \defeq d^{\H}_i(G)$ has $g^F = g^G$ by definition of $d^{\H}$. Therefore $D(F) = D(G) = 1$ and hence $F\in \H^1_{n-1}$. Idem for $s^{\H}$. Thus $\H^1$ is a subobject of $\H$
+\end{proof}
 \newpage
-\section{Coalgebraic behaviour}
+\section{Towards coalgebraic behaviour}
+For our setup a coalgebra with well-defined behaviour is not yet found. Therefore in this section we pose a potential coalgebra and a subsequent behaviour function, which has a few problems. Besides this we propose some solutions, which might be worth further investigation.
+
+\subsection{The idea}
 To add behaviour to the hypergraph simplicial set we define pointed F-coalgebras by the endofunctor
 
 \begin{definition}\thlabel{def_endofunc}
@@ -1125,38 +1144,16 @@ To formalise this we define a behaviour function.
     \]
 
     Where $K$ is a morphism defined by the following commuting diagram
-    \begin{center}
+    \begin{center}\label{dia_problems}
         \begin{tikzcd}
             HG_1\times X \times [X,\Omega]\arrow[r, "K"] \arrow[d, swap, "\widetilde{\pi_2\circ c} \times \id"] & \Omega\\
             \finP(X\sqcup \uparrow X)\times [X,\Omega] \arrow[r, "\finP ev"] & \finP(\Omega)\arrow[u, swap, "\bigvee"]
         \end{tikzcd}
     \end{center}
 \end{definition}
-\newpage
+\subsection{Current problems} The problems come in when looking at the bottom arrow of diagram \ref{dia_problems}. Here the carrier of the finite powerset in $\finP(X\sqcup \uparrow X)$ and the domain of the simplicial morphism in $[X,\Omega]$ aren't equal. Thus the use of the evaluation map $\finP ev$ isn't fully defined.
 
-\begin{definition}
-    Let $(X, c, x_0)$ be a pointed F-coalgebra of \ref{def_endofunc}. Define the so called \emph{behaviour function} as
-    \begin{align*}
-        \beh : \H \to \Omega^X \\
-        \beh = \overline{(\beh_0, \beh_1)}
-    \end{align*}
-    Where $\beh$ is the inductive closure of $\beh_0, \beh_1$:\\
-    \[
-        \begin{array}{ll}
-            \beh_0: \1 \to [X, \Omega] & \beh_0 = \lambda(\pi_1\circ c)\\
-            \beh_1: HG_1\times [X, \Omega] \to [X, \Omega] & \beh_1 = \lambda_2 K
-        \end{array}
-    \]
-
-    Where $K$ is a morphism defined by the following commuting diagram
-    \begin{center}
-        \begin{tikzcd}
-            HG_1\times X \times [X,\Omega]\arrow[r, "K"] \arrow[d, swap, "\widetilde{\pi_2\circ c} \times \id"] & \Omega\\
-            \finP(X\sqcup \uparrow X)\times [X,\Omega] \arrow[r, "\finP ev"] & \finP(\Omega)\arrow[u, swap, "\bigvee"]
-        \end{tikzcd}
-    \end{center}
-\end{definition}
-
+But intuitively it works. A simplicial map is a natural transformation, a family of morphisms such that there is one morphism for each $[n]\in \Delta$. So a potential solution is pointwise, for an $n$-cell in $X$ we transition to a finite set of $n$- and $n+1$-cells in $X\sqcup \uparrow X$. For any simplicial morphism $f: X\to S$ we have a function $f_n: X_n\to S_n$ for all $n$. Therefore we could evaluate all transitioned-to elements using a simplicial morphism with $X$ as domain.
 \newpage
 
 \section{Conclusions and Further Research}

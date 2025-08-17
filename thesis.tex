@@ -1014,7 +1014,7 @@ Define the simplicial set $\H$ by $\H_n = HG(n,n)$. With face and degeneracy map
 
 Note that for a given ranked hypergraph $G$ its underlying DAH $g$ is invariant under $d$ and $s$. This leads to the following result.
 
-\begin{corollary}
+\begin{corollary}\label{cor:gen_in_sset}
     $\H^1 \defeq HG_1\cap \H$ is a subobject of $\H$. That is, $\H^1$ is a simplicial set with as face and degeneracy maps $d^{\H}$, respectively $s^{\H}$.
 \end{corollary}
 
@@ -1151,12 +1151,55 @@ To formalise this we define a behaviour function.
         \end{tikzcd}
     \end{center}
 \end{definition}
-\subsection{Current problems} The problems come in when looking at the bottom arrow of diagram \ref{dia_problems}. Here the carrier of the finite powerset in $\finP(X\sqcup \uparrow X)$ and the domain of the simplicial morphism in $[X,\Omega]$ aren't equal. Thus the use of the evaluation map $\finP ev$ isn't fully defined.
+\subsection{Current problems and possible solutions}\label{sec:coalg_problems} The problems come in when looking at the bottom arrow of diagram \ref{dia_problems}. Here the carrier of the finite powerset in $\finP(X\sqcup \uparrow X)$ and the domain of the simplicial morphism in $[X,\Omega]$ aren't equal. Thus the use of the evaluation map $\finP ev$ isn't fully defined.
 
-But intuitively it works. A simplicial map is a natural transformation, a family of morphisms such that there is one morphism for each $[n]\in \Delta$. So a potential solution is pointwise, for an $n$-cell in $X$ we transition to a finite set of $n$- and $n+1$-cells in $X\sqcup \uparrow X$. For any simplicial morphism $f: X\to S$ we have a function $f_n: X_n\to S_n$ for all $n$. Therefore we could evaluate all transitioned-to elements using a simplicial morphism with $X$ as domain.
+But intuitively it works. A simplicial map is a natural transformation, a family of morphisms such that there is one morphism for each $[n]\in \Delta$. So a potential solution is pointwise, for an $n$-cell in $X$ we transition to a finite set of $n$- and $(n+1)$-cells in $X\sqcup \uparrow X$. For any simplicial morphism $f: X\to S$ we have a function $f_n: X_n\to S_n$ for all $n$. Therefore we could evaluate all transitioned-to elements using a simplicial morphism with $X$ as domain.
+
+A second problem is the disconnect between the generator $HG_1$ and the simplicial set $\H$. At this point in the research we have only found a deconstruction for all hypergraphs into $HG_1$. But this isn't the state space $\H_1$ we wanted to use. A possible solution would be something like $\H^1$, as defined in Corollary \ref{cor:gen_in_sset}. Or, if there is need for a more drastic change in the simplicial set, consider the following:
+
+Describe a relation of ranked hypergraphs that show they have the same behaviour when looked at as dependency graphs, i.e. the described dependencies and action executions are the same. This is visible in figure \ref{fig:behaviour_equiv}, in both graphs actions $a$ and $b$ need to be taken to `fulfill' the actions of the graph, except their graphs structures aren't equal. Up to this relation, there even exists a right identity, which could lead to a monoidal structure. This could in turn be used to define a simplicial set by the nerve construction which would partition the entire set of ranked hypergraphs by their depth. 
+
+\begin{figure}[H]
+    \begin{center}
+        \begin{tikzpicture}[scale=0.2]
+            \tikzstyle{every node}+=[inner sep=0pt]
+            \draw [black] (5.8,-13.6) circle (3);
+            \draw (5.8,-13.6) node {$1$};
+            \draw [black] (5.8,-28.3) circle (3);
+            \draw (5.8,-28.3) node {$2$};
+            \draw [black] (20.8,-20.3) circle (3);
+            \draw (20.8,-20.3) node {$3$};
+            \draw [black] (38.2,-13.8) circle (3);
+            \draw (38.2,-13.8) node {$1$};
+            \draw [black] (38.2,-28.3) circle (3);
+            \draw (38.2,-28.3) node {$2$};
+            \draw [black] (55.1,-13.8) circle (3);
+            \draw (55.1,-13.8) node {$3$};
+            \draw [black] (55.1,-28.3) circle (3);
+            \draw (55.1,-28.3) node {$4$};
+            \draw [black] (8.54,-14.82) -- (18.06,-19.08);
+            \fill [black] (18.06,-19.08) -- (17.53,-18.29) -- (17.13,-19.21);
+            \draw (12.38,-17.46) node [below] {$a$};
+            \draw [black] (8.45,-26.89) -- (18.15,-21.71);
+            \fill [black] (18.15,-21.71) -- (17.21,-21.65) -- (17.68,-22.53);
+            \draw (14.3,-24.8) node [below] {$b$};
+            \draw [black] (41.2,-13.8) -- (52.1,-13.8);
+            \fill [black] (52.1,-13.8) -- (51.3,-13.3) -- (51.3,-14.3);
+            \draw (46.65,-14.3) node [below] {$a$};
+            \draw [black] (41.2,-28.3) -- (52.1,-28.3);
+            \fill [black] (52.1,-28.3) -- (51.3,-27.8) -- (51.3,-28.8);
+            \draw (46.65,-28.8) node [below] {$b$};
+        \end{tikzpicture}
+    \end{center}
+    \caption{Dependency graphs of equivalent behaviour ($a$ parallel with $b$)}
+    \label{fig:behaviour_equiv}
+\end{figure}
 \newpage
 
 \section{Conclusions and Further Research}
+Ranked hypergraphs seem to be a very strong and intuitive model for concurrent behaviour. Their interfaces allow for more complex dependency handling than standard dependency graphs. Associative composition with a left unit are already very strong properties, which combine nicely with quite a simple generator. Moreover the construction in the proof of \thref{thm_generator} gives a very computable construction of any graph into a sequence of generating depth-$1$ graphs.
+
+More work needs to be done primarily on the semantics side as there isn't yet a working behaviour map. To find this there will need to be changes made to at least the coalgebra, if not the entire simplicial set, as is detailed in section \ref{sec:coalg_problems}.
 
 \bibliographystyle{alphadin}
 \bibliography{bibliography}

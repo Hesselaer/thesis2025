@@ -104,15 +104,11 @@
 \include{titlepage.tex}
 \begin{abstract}
 \noindent
-Regular expressions give an easy way to express regular languages, and through Kleene's theorem we know the regular languages they describe are exactly equal to the ones modelled by deterministic finite automata. These automata give a very efficient way to parse strings, search through data, check for patterns etc. But these regular languages only contain strings of characters, given by sequential composition. In practice machines, software, biology, and other forms of data exhibit concurrent behaviour. Such as parallel computing, manufacturing with multiple steps which aren't directly dependent, or cellular activity in organisms.
+Deterministic finite automata (DFA) are an important piece in computer science with uses ranging from highly effective string parsing to checking for patterns in data among others. Additionally, through Kleene's theorem we know the regular languages they describe are exactly the ones defined by regular expressions, making them a powerful tool. Except these regular languages only contain strings of characters, given by sequential composition. This limits their expressive power and excludes systems where concurrent behaviour is inherently present such as software, biology, chemical processes and many others where processes have multiple steps that are dependent in a structure of higher complexity.
 
-In contrast to regular languages, a model for these concurrent languages, together with expressions, hasn't been found yet. Previous attempts have been made but they haven't been as useful as wanted. We think the main problem with the previous approaches have been the conflation of structure with behaviour, transitions in the model were restricted by the form of the state space.
+Counterparts to DFA and regular expressions, however, have not yet been found to a satisfactory degree. In a previous attempt higher dimensional automata (HDA) were introduced, except with the exclusion of a repeated parallel operator in its expressions the model is too weak for a variety of applications. We think the main problem with the previous approaches have been the conflation of structure with behaviour, transitions in the model were restricted by the form of the state space.
 
-For this problem we first propose a new type of dependency graph called ranked hypergraphs. These are directed acyclic hypergraphs which have root and output interfaces that give control over dependencies and the defined sequential composition is associative up to isomorphism.
-
-Because of the interfaces there is a generator of graphs of depth 1. Which means that in these graphs there isn't a path longer than 1 edge. We can inductively split up any graph into these pieces, which lets them serve as building blocks for all ranked hypergraphs.
-
-As structure for these graphs we define a simplicial set containing them. Finally, a coalgebra is used to define a transition and acceptance system for these states, mirroring classical automata by splitting up graphs into their building blocks.
+To this end, we first propose a type of dependency graph called \emph{ranked hypergraphs}. These are directed acyclic hypergraphs which have root and output interfaces that give control over dependencies and admit a sequential composition is associative up to isomorphism. We show ranked hypergraphs admit a generator that consists of ranked hypergraphs of depth 1, which have no paths longer than 1 edge. We construct a simplicial set of ranked hypergraphs to serve as the counterpart of the state space from DFA. Finally, we propose a candidate model of concurrent languages over an alphabet given by coalgebras of an endofunctor on simplicial sets.
 \end{abstract}
 
 \bigskip
